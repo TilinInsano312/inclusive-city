@@ -1,0 +1,162 @@
+networks:
+  microservices-network:
+    driver: bridge
+
+volumes:
+  mongodb-prod-data:
+  mongodb-test-data:
+
+services:
+  inclusive_db:
+    container_name: inclusive_db
+    image: mongo:8.0.3
+    environment:
+      MONGO_INITDB_DATABASE: inclusive_db
+      MONGO_INITDB_ROOT_HOSTNAME: inclusive
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-prod-data:/data/db
+    restart: always
+    networks:
+      - microservices-network
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongodb-test:
+    image: mongo:8.0.3
+    container_name: mongodb-test
+    ports:
+      - "27018:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: testpassword
+      MONGO_INITDB_DATABASE: test_db
+    volumes:
+      - mongodb-test-data:/data/db
+    networks:
+      - microservices-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  eureka-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: eureka-server
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - microservices-network
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+
+  gateway-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: gateway-service
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    networks:
+      - microservices-network
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
+      - SPRING_CLOUD_GATEWAY_DISCOVERY_LOCATOR_ENABLED=true
+    depends_on:
+      - eureka-server
+
+
+
+  accounts_service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: account-api
+    container_name: accounts_service
+    ports:
+      - "8090:8080"
+    networks:
+      - microservices-network
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATA_MONGODB_URI=mongodb://admin:admin@inclusive:27017/inclusive_db
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
+    depends_on:
+      inclusive_db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+
+  location_service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: location-api
+    container_name: location_service
+    ports:
+      - "8070:8080"
+    networks:
+      - microservices-network
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATA_MONGODB_URI=mongodb://admin:admin@inclusive:27017/inclusive_db
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
+    depends_on:
+      inclusive_db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+
+  route_service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: route-api
+    container_name: route_service
+    ports:
+      - "8060:8080"
+    networks:
+      - microservices-network
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATA_MONGODB_URI=mongodb://admin:admin@inclusive:27017/inclusive_db
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
+    depends_on:
+      inclusive_db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+
+  auth_service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: authentication-service
+    container_name: auth_service
+    ports:
+      - "9090:8080"
+    networks:
+    - microservices-network
+    environment:
+    - SPRING_PROFILES_ACTIVE=docker
+    - SPRING_DATA_MONGODB_URI=mongodb://admin:admin@inclusive:27017/inclusive_db
+    - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
+    depends_on:
+      inclusive_db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+
+
