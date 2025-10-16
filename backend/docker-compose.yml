@@ -11,10 +11,10 @@ services:
     container_name: inclusive_db
     image: mongo:8.0.3
     environment:
-      MONGO_INITDB_DATABASE: inclusive_db
-      MONGO_INITDB_ROOT_HOSTNAME: inclusive
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: admin
+      MONGO_INITDB_DATABASE: ${SPRING_DATA_MONGODB_DATABASE}
+      MONGO_INITDB_ROOT_HOSTNAME: ${SPRING_DATA_MONGODB_HOST}
+      MONGO_INITDB_ROOT_USERNAME: ${SPRING_DATA_MONGODB_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${SPRING_DATA_MONGODB_PASSWORD}
     ports:
       - "27017:27017"
     volumes:
@@ -34,9 +34,10 @@ services:
     ports:
       - "27018:27017"
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: testpassword
-      MONGO_INITDB_DATABASE: test_db
+      MONGO_INITDB_ROOT_HOSTNAME: ${SPRING_DATA_MONGODB_HOST}
+      MONGO_INITDB_ROOT_USERNAME: test
+      MONGO_INITDB_ROOT_PASSWORD: test
+      MONGO_INITDB_DATABASE: testdb
     volumes:
       - mongodb-test-data:/data/db
     networks:
@@ -49,7 +50,7 @@ services:
 
   eureka-server:
     build:
-      context: .
+      context: ../backend
       dockerfile: Dockerfile
       target: eureka-server
     container_name: eureka-server
@@ -62,7 +63,7 @@ services:
 
   gateway-service:
     build:
-      context: .
+      context: ../backend
       dockerfile: Dockerfile
       target: gateway-service
     container_name: api-gateway
@@ -70,6 +71,8 @@ services:
       - "8080:8080"
     networks:
       - microservices-network
+    env_file:
+      - .env
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
@@ -81,17 +84,19 @@ services:
 
   accounts_service:
     build:
-      context: .
+      context: ../backend
       dockerfile: Dockerfile
       target: account-api
     container_name: accounts_service
     ports:
-      - "8090:8080"
+      - "8090:8090"
     networks:
       - microservices-network
+    env_file:
+      - .env
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_DATA_MONGODB_URI=mongodb://admin:admin@inclusive:27017/inclusive_db
+      - SPRING_DATA_MONGODB_URI=${SPRING_DATA_MONGODB_URI}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
     depends_on:
       inclusive_db:
@@ -101,17 +106,19 @@ services:
 
   location_service:
     build:
-      context: .
+      context: ../backend
       dockerfile: Dockerfile
       target: location-api
     container_name: location_service
     ports:
-      - "8070:8080"
+      - "8070:8070"
     networks:
       - microservices-network
+    env_file:
+      - .env
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_DATA_MONGODB_URI=mongodb://admin:admin@inclusive:27017/inclusive_db
+      - SPRING_DATA_MONGODB_URI=${SPRING_DATA_MONGODB_URI}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
     depends_on:
       inclusive_db:
@@ -121,17 +128,19 @@ services:
 
   route_service:
     build:
-      context: .
+      context: ../backend
       dockerfile: Dockerfile
       target: route-api
     container_name: route_service
     ports:
-      - "8060:8080"
+      - "8060:8060"
     networks:
       - microservices-network
+    env_file:
+      - .env
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_DATA_MONGODB_URI=mongodb://admin:admin@inclusive:27017/inclusive_db
+      - SPRING_DATA_MONGODB_URI=${SPRING_DATA_MONGODB_URI}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
     depends_on:
       inclusive_db:
@@ -141,17 +150,19 @@ services:
 
   auth_service:
     build:
-      context: .
+      context: ../backend
       dockerfile: Dockerfile
       target: authentication-service
     container_name: auth_service
     ports:
-      - "9090:8080"
+      - "9090:9090"
     networks:
     - microservices-network
+    env_file:
+      - .env
     environment:
     - SPRING_PROFILES_ACTIVE=docker
-    - SPRING_DATA_MONGODB_URI=mongodb://admin:admin@inclusive:27017/inclusive_db
+    - SPRING_DATA_MONGODB_URI=${SPRING_DATA_MONGODB_URI}
     - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
     depends_on:
       inclusive_db:
