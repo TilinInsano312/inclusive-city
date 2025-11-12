@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.mapping.MongoId;
 @ToString
 @EqualsAndHashCode
 public class Spot {
+    //Hace referencia a un punto de interes al guardar(Ej: Casa, Trabajo)
     @MongoId
     private String id;
     private String spotName;

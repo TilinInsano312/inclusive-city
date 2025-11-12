@@ -1,6 +1,6 @@
 package com.ufro.microservice.location_API.spot.controller;
 
-import com.ufro.microservice.location_API.common.ApiResponse;
+import com.ufro.microservice.location_API.common.response.ApiResponse;
 import com.ufro.microservice.location_API.spot.dto.DTOSpot;
 import com.ufro.microservice.location_API.spot.repository.ISpotRepository;
 import com.ufro.microservice.location_API.spot.service.SpotService;
@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+// Controlador para gestionar las operaciones relacionadas con los spots (ubicaciones no establecimientos)
 @RestController
 @RequestMapping("inclusive/api/v1/locations/")
 public class SpotController {
@@ -26,7 +27,7 @@ public class SpotController {
     public ResponseEntity<ApiResponse<DTOSpot>> insertASpot(@RequestBody DTOSpot dtoSpot) {
 
         if (dtoSpot == null) {
-            ApiResponse<DTOSpot> responseError400 = new ApiResponse<>(dtoSpot, "Invalid spot data");
+            ApiResponse<DTOSpot> responseError400 = new ApiResponse<>(dtoSpot);
             return ResponseEntity.badRequest().body(responseError400);
         }
         ApiResponse<DTOSpot> response = new ApiResponse<>(
@@ -38,11 +39,11 @@ public class SpotController {
     @GetMapping("/{idUser}")
     public ResponseEntity<ApiResponse<List<DTOSpot>>> getSpotByIdUser(@PathVariable String idUser) {
         if (idUser == null || idUser.isEmpty()) {
-            ApiResponse<List<DTOSpot>> responseError400 = new ApiResponse<>( null, "Invalid format");
+            ApiResponse<List<DTOSpot>> responseError400 = new ApiResponse<>( null);
             return ResponseEntity.badRequest().body(responseError400);
         }
         if (!spotRepository.existsById(idUser)) {
-            ApiResponse<List<DTOSpot>> responseError404 = new ApiResponse<>( null, "User not found");
+            ApiResponse<List<DTOSpot>> responseError404 = new ApiResponse<>( null);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseError404);
         }
         ApiResponse<List<DTOSpot>> response = new ApiResponse<>(
