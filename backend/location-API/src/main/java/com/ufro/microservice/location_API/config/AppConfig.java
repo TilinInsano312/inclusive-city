@@ -13,10 +13,9 @@ public class AppConfig {
         this.googleMapsConfig = googleMapsConfig;
     }
 
+    //Cliente de google
     @Bean
     public GeoApiContext geoApiContext() {
-        // Creamos el cliente de Google Maps
-        // Se reutilizará en toda la aplicación
         return new GeoApiContext.Builder()
                 .apiKey(googleMapsConfig.getApiKey())
                 .build();
