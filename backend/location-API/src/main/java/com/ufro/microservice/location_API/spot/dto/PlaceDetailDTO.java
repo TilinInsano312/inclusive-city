@@ -6,10 +6,10 @@ public class PlaceDetailDTO {
     private String placeId;
     private String name;
     private String address;
-    private CoordinateDTO coordinate;
+    private LocationDTO coordinate;
     private List<String> photos;
 
-    public PlaceDetailDTO(String placeId, String name, String address, CoordinateDTO coordinate, List<String> photos) {
+    public PlaceDetailDTO(String placeId, String name, String address, LocationDTO coordinate, List<String> photos) {
         this.placeId = placeId;
         this.name = name;
         this.address = address;
@@ -41,11 +41,11 @@ public class PlaceDetailDTO {
         this.address = address;
     }
 
-    public CoordinateDTO getCoordinate() {
+    public LocationDTO getCoordinate() {
         return coordinate;
     }
 
-    public void setCoordinate(CoordinateDTO coordinate) {
+    public void setCoordinate(LocationDTO coordinate) {
         this.coordinate = coordinate;
     }
 

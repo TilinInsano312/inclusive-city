@@ -2,31 +2,33 @@ package com.ufro.microservice.location_API.spot.model;
 
 import lombok.*;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
 
 @ToString
 @EqualsAndHashCode
+@Document(collection = "spots")
 public class Spot {
     //Hace referencia a un punto de interes al guardar(Ej: Casa, Trabajo)
     @MongoId
     private String id;
+    private String userId;
     private String spotName;
     @Indexed(unique = true)
-    private String place_id;
+    private String placeId;
     private String address;
-    private double longitude;
-    private double latitude;
+    private Location location;
     private String type;
 
-    public Spot(Spot spot) {
-        this.id = spot.getId();
-        this.spotName = spot.getSpotName();
-        this.place_id = spot.getPlace_id();
-        this.address = spot.getAddress();
-        this.longitude = spot.getLongitude();
-        this.latitude = spot.getLatitude();
-        this.type = spot.getType();
+    public Spot(String id, String userId, String spotName, String placeId, String address, Location location, String type) {
+        this.id = id;
+        this.userId = userId;
+        this.spotName = spotName;
+        this.placeId = placeId;
+        this.address = address;
+        this.location = location;
+        this.type = type;
     }
 
     public Spot() {
@@ -40,6 +42,14 @@ public class Spot {
         this.id = id;
     }
 
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
     public String getSpotName() {
         return spotName;
     }
@@ -48,12 +58,12 @@ public class Spot {
         this.spotName = spotName;
     }
 
-    public String getPlace_id() {
-        return place_id;
+    public String getPlaceId() {
+        return placeId;
     }
 
-    public void setPlace_id(String place_id) {
-        this.place_id = place_id;
+    public void setPlaceId(String placeId) {
+        this.placeId = placeId;
     }
 
     public String getAddress() {
@@ -64,20 +74,12 @@ public class Spot {
         this.address = address;
     }
 
-    public double getLatitude() {
-        return latitude;
+    public Location getLocation() {
+        return location;
     }
 
-    public void setLatitude(double latitude) {
-        this.latitude = latitude;
-    }
-
-    public double getLongitude() {
-        return longitude;
-    }
-
-    public void setLongitude(double longitude) {
-        this.longitude = longitude;
+    public void setLocation(Location location) {
+        this.location = location;
     }
 
     public String getType() {
