@@ -6,10 +6,9 @@ import com.google.maps.PlaceDetailsRequest;
 import com.google.maps.PlacesApi;
 import com.google.maps.model.PlaceDetails;
 import com.google.maps.model.PlacesSearchResponse;
-import com.ufro.microservice.location_API.spot.dto.CoordinateDTO;
-import com.ufro.microservice.location_API.spot.dto.PhotoDTO;
-import com.ufro.microservice.location_API.spot.dto.PlaceDetailDTO;
-import com.ufro.microservice.location_API.spot.dto.PlaceSearchDTO;
+import com.ufro.microservice.location_API.spot.dto.*;
+import com.ufro.microservice.location_API.spot.mapper.IPlaceMapper;
+import com.ufro.microservice.location_API.spot.repository.IPlaceRepository;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
@@ -20,16 +19,22 @@ import java.util.stream.Collectors;
 public class PlacesService implements IPlaceService{
 
     private final GeoApiContext geoApiContext;
+    private final IPlaceMapper placeMapper;
+    private final IPlaceRepository placeRepository;
+    private final StatDataService statDataService;
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(PlacesService.class);
 
-    public PlacesService(GeoApiContext geoApiContext) {
+    public PlacesService(GeoApiContext geoApiContext, IPlaceMapper placeMapper, IPlaceRepository placeRepository, StatDataService statDataService) {
         this.geoApiContext = geoApiContext;
+        this.placeMapper = placeMapper;
+        this.placeRepository = placeRepository;
+        this.statDataService = statDataService;
     }
 
     //Buscar lugar por placeId
     //To do: manejar excepciones
     @Override
-    public PlaceDetailDTO getPlaceDetails(String placeId) {
+    public PlaceDetailResponseDTO getPlaceDetails(String placeId) {
         try {
             PlaceDetails request = PlacesApi.placeDetails(geoApiContext, placeId)
                     .fields(PlaceDetailsRequest.FieldMask.PLACE_ID,
@@ -37,8 +42,16 @@ public class PlacesService implements IPlaceService{
                             PlaceDetailsRequest.FieldMask.FORMATTED_ADDRESS,
                             PlaceDetailsRequest.FieldMask.GEOMETRY,
                             PlaceDetailsRequest.FieldMask.PHOTOS).await();
-            log.info(request.name);
-            return convertToDetailDTO(request);
+            PlaceDetailDTO detailDTO = convertToDetailDTO(request);
+            return new PlaceDetailResponseDTO(
+                    detailDTO.getPlaceId(),
+                    detailDTO.getName(),
+                    detailDTO.getAddress(),
+                    detailDTO.getCoordinate(),
+                    detailDTO.getPhotos(),
+                    getMedalsByPlaceId(placeId),
+                    getRatingByPlaceId(placeId)
+            );
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -46,25 +59,38 @@ public class PlacesService implements IPlaceService{
     //Buscar lugares por nombre
     //To do: manejar excepciones
     @Override
-    public List<PlaceSearchDTO> getPlaceBySearch(String query) {
+    public List<PlaceSearchResponseDTO> getPlaceBySearch(String query) {
         try {
             PlacesSearchResponse respuestaGoogle = PlacesApi.textSearchQuery(geoApiContext, query).region("cl").language("es")
                     .await();
-            return Arrays.stream(respuestaGoogle.results)
-                    .map(resultado -> new PlaceSearchDTO(
-                            resultado.placeId,
-                            resultado.name,
-                            resultado.formattedAddress,
-                            new CoordinateDTO(
-                                    resultado.geometry.location.lat,
-                                    resultado.geometry.location.lng
-                            ),
-                            resultado.photos != null ?
-                                    Arrays.stream(resultado.photos)
-                                            .map(photo -> photo.photoReference)
-                                            .collect(Collectors.toList())
-                                    : Collections.emptyList())
-                    ).collect(Collectors.toList());
+            return Arrays.stream(respuestaGoogle.results).map(lugar -> {
+                LocationDTO coords = new LocationDTO(
+                        lugar.geometry.location.lat,
+                        lugar.geometry.location.lng
+                );
+                List<String> medals = new ArrayList<>();
+                float rating = 0.0f;
+                try {
+                    medals = getMedalsByPlaceId(lugar.placeId);
+                    rating = getRatingByPlaceId(lugar.placeId);
+                } catch (NoSuchElementException e) {
+                    log.warn(e.getMessage());
+                }
+                return new PlaceSearchResponseDTO(
+                        lugar.placeId,
+                        lugar.name,
+                        lugar.formattedAddress,
+                        coords,
+                        lugar.photos != null ?
+                                Arrays.stream(lugar.photos)
+                                        .map(photo -> photo.photoReference)
+                                        .collect(Collectors.toList())
+                                : Collections.emptyList(),
+                        medals,
+                        rating
+
+                );
+            }).collect(Collectors.toList());
         }catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -82,8 +108,9 @@ public class PlacesService implements IPlaceService{
         }
     }
 
+    // Utils
     private PlaceDetailDTO convertToDetailDTO(PlaceDetails details) {
-        CoordinateDTO coords = new CoordinateDTO(
+        LocationDTO coords = new LocationDTO(
                 details.geometry.location.lat,
                 details.geometry.location.lng
         );
@@ -101,4 +128,23 @@ public class PlacesService implements IPlaceService{
                 photoReferences
         );
     }
+    private List<String> getMedalsByPlaceId(String placeId) {
+        if (!placeRepository.existsPlaceByPlaceId(placeId)) {
+            return Collections.emptyList();
+        }
+        return placeRepository.findByPlaceId(placeId)
+                .map(place -> new ArrayList<>(place.getMedals())).orElseThrow(
+                        () -> new NoSuchElementException("No se encontraron medallas para el lugar con placeId: " + placeId)
+                );
+    }
+    private float getRatingByPlaceId(String placeId) {
+        if (!placeRepository.existsPlaceByPlaceId(placeId)) {
+            return 0.0f;
+        }
+        return placeRepository.findByPlaceId(placeId)
+                .map(place -> place.getRating()).orElseThrow( () ->
+                        new NoSuchElementException("No se encontró rating para el lugar con placeId: " + placeId)
+                );
+    }
+
 }
