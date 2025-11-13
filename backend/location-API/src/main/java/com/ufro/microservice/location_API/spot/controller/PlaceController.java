@@ -1,9 +1,7 @@
 package com.ufro.microservice.location_API.spot.controller;
 
 import com.ufro.microservice.location_API.common.response.ApiResponse;
-import com.ufro.microservice.location_API.spot.dto.PhotoDTO;
-import com.ufro.microservice.location_API.spot.dto.PlaceDetailDTO;
-import com.ufro.microservice.location_API.spot.dto.PlaceSearchDTO;
+import com.ufro.microservice.location_API.spot.dto.*;
 import com.ufro.microservice.location_API.spot.service.IPlaceService;
 import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
@@ -14,7 +12,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 //Controlador para gestionar las operaciones relacionadas con los places (lugares/establecimientos)
-@RequestMapping("inclusive/api/v1/place/")
+@RequestMapping("inclusive/api/v1/locations/place/")
 @RestController
 public class PlaceController {
     private final IPlaceService placeService;
@@ -24,11 +22,11 @@ public class PlaceController {
     }
 
     @GetMapping("{placeId}")
-    public ResponseEntity<ApiResponse<PlaceDetailDTO>> getPlaceById(@PathVariable String placeId) {
+    public ResponseEntity<ApiResponse<PlaceDetailResponseDTO>> getPlaceById(@PathVariable String placeId) {
         return ResponseEntity.ok().body(new ApiResponse<>(placeService.getPlaceDetails(placeId)));
     }
     @PostMapping("search")
-    public ResponseEntity<ApiResponse<List<PlaceSearchDTO>>> getPlaceBySearch(@RequestBody String query) {
+    public ResponseEntity<ApiResponse<List<PlaceSearchResponseDTO>>> getPlaceBySearch(@RequestBody String query) {
         return ResponseEntity.ok().body(new ApiResponse<>(placeService.getPlaceBySearch(query)));
     }
 
@@ -40,4 +38,6 @@ public class PlaceController {
                 .cacheControl(CacheControl.maxAge(1, TimeUnit.DAYS)) // Cachear por 1 día
                 .body(photoDTO.getData());
     }
+
+
 }
