@@ -1,173 +1,193 @@
-networks:
-  microservices-network:
-    driver: bridge
-
-volumes:
-  mongodb-prod-data:
-  mongodb-test-data:
-
 services:
-  inclusive_db:
-    container_name: inclusive_db
-    image: mongo:8.0.3
-    environment:
-      MONGO_INITDB_DATABASE: ${SPRING_DATA_MONGODB_DATABASE}
-      MONGO_INITDB_ROOT_HOSTNAME: ${SPRING_DATA_MONGODB_HOST}
-      MONGO_INITDB_ROOT_USERNAME: ${SPRING_DATA_MONGODB_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${SPRING_DATA_MONGODB_PASSWORD}
+  # ============================================
+  # Base de Datos
+  # ============================================
+  mongodb:
+    image: mongo:7
+    container_name: mongodb
+    restart: unless-stopped
     ports:
       - "27017:27017"
-    volumes:
-      - mongodb-prod-data:/data/db
-    restart: always
-    networks:
-      - microservices-network
-    healthcheck:
-      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  mongodb-test:
-    image: mongo:8.0.3
-    container_name: mongodb-test
-    ports:
-      - "27018:27017"
     environment:
-      MONGO_INITDB_ROOT_HOSTNAME: ${SPRING_DATA_MONGODB_HOST}
-      MONGO_INITDB_ROOT_USERNAME: test
-      MONGO_INITDB_ROOT_PASSWORD: test
-      MONGO_INITDB_DATABASE: testdb
+      - MONGO_INITDB_DATABASE=inclusivedb
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USER:-admin}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD:-admin123}
+    env_file:
+      - .env
     volumes:
-      - mongodb-test-data:/data/db
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
     networks:
-      - microservices-network
+      - microservices-net
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
       interval: 10s
       timeout: 5s
       retries: 5
 
+  # ============================================
+  # Eureka Server (Service Discovery)
+  # ============================================
   eureka-server:
     build:
-      context: ../backend
-      dockerfile: Dockerfile
-      target: eureka-server
+      context: .
+      dockerfile: eureka-server/Dockerfile
     container_name: eureka-server
+    restart: unless-stopped
     ports:
       - "8761:8761"
-    networks:
-      - microservices-network
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-
-  gateway-service:
-    build:
-      context: ../backend
-      dockerfile: Dockerfile
-      target: gateway-service
-    container_name: api-gateway
-    ports:
-      - "8080:8080"
+      - EUREKA_INSTANCE_HOSTNAME=eureka-server
     networks:
-      - microservices-network
-    env_file:
-      - .env
-    environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
-      - SPRING_CLOUD_GATEWAY_DISCOVERY_LOCATOR_ENABLED=true
-    depends_on:
-      - eureka-server
+      - microservices-net
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8761/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
 
-
-
-  accounts_service:
+  # ============================================
+  # Authentication Service
+  # ============================================
+  authentication-service:
     build:
-      context: ../backend
-      dockerfile: Dockerfile
-      target: account-api
-    container_name: accounts_service
-    ports:
-      - "8090:8090"
-    networks:
-      - microservices-network
-    env_file:
-      - .env
-    environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_DATA_MONGODB_URI=${SPRING_DATA_MONGODB_URI}
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
-    depends_on:
-      inclusive_db:
-        condition: service_healthy
-      eureka-server:
-        condition: service_healthy
-
-  location_service:
-    build:
-      context: ../backend
-      dockerfile: Dockerfile
-      target: location-api
-    container_name: location_service
-    ports:
-      - "8070:8070"
-    networks:
-      - microservices-network
-    env_file:
-      - .env
-    environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_DATA_MONGODB_URI=${SPRING_DATA_MONGODB_URI}
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
-    depends_on:
-      inclusive_db:
-        condition: service_healthy
-      eureka-server:
-        condition: service_healthy
-
-  route_service:
-    build:
-      context: ../backend
-      dockerfile: Dockerfile
-      target: route-api
-    container_name: route_service
-    ports:
-      - "8060:8060"
-    networks:
-      - microservices-network
-    env_file:
-      - .env
-    environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_DATA_MONGODB_URI=${SPRING_DATA_MONGODB_URI}
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
-    depends_on:
-      inclusive_db:
-        condition: service_healthy
-      eureka-server:
-        condition: service_healthy
-
-  auth_service:
-    build:
-      context: ../backend
-      dockerfile: Dockerfile
-      target: authentication-service
-    container_name: auth_service
+      context: .
+      dockerfile: authentication-service/Dockerfile
+    container_name: authentication-service
+    restart: unless-stopped
     ports:
       - "9090:9090"
-    networks:
-    - microservices-network
-    env_file:
-      - .env
     environment:
-    - SPRING_PROFILES_ACTIVE=docker
-    - SPRING_DATA_MONGODB_URI=${SPRING_DATA_MONGODB_URI}
-    - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_DATA_MONGODB_URI=mongodb://${MONGO_ROOT_USER:-admin}:${MONGO_ROOT_PASSWORD:-admin}@inclusivedb:27017/authentication?authSource=admin
     depends_on:
-      inclusive_db:
-        condition: service_healthy
       eureka-server:
         condition: service_healthy
+      mongodb:
+        condition: service_healthy
+    networks:
+      - microservices-net
 
+#  # ============================================
+#  # Account API
+#  # ============================================
+#  account-api:
+#    build:
+#      context: .
+#      dockerfile: account-API/Dockerfile
+#    container_name: account-api
+#    restart: unless-stopped
+#    ports:
+#      - "8082:8082"
+#    environment:
+#      - SPRING_PROFILES_ACTIVE=docker
+#      - SPRING_DATA_MONGODB_URI=mongodb://${MONGO_ROOT_USER:-admin}:${MONGO_ROOT_PASSWORD:-admin123}@mongodb:27017/accounts?authSource=admin
+#      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+#    depends_on:
+#      eureka-server:
+#        condition: service_healthy
+#      mongodb:
+#        condition: service_healthy
+#    networks:
+#      - microservices-net
+
+  # ============================================
+  # Route API
+  # ============================================
+  route-api:
+    build:
+      context: .
+      dockerfile: route-API/Dockerfile
+    container_name: route-api
+    restart: unless-stopped
+    ports:
+      - "8060:8060"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATA_MONGODB_URI=mongodb://${MONGO_ROOT_USER:-admin}:${MONGO_ROOT_PASSWORD:-admin}@localhost:27017/inclusivedb/routes?authSource=admin
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+    networks:
+      - microservices-net
+
+  # ============================================
+  # Location API
+  # ============================================
+  location-api:
+    build:
+      context: .
+      dockerfile: location-API/Dockerfile
+    container_name: location-api
+    restart: unless-stopped
+    ports:
+      - "8070:8070"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATA_MONGODB_URI=mongodb://${MONGO_ROOT_USER:-admin}:${MONGO_ROOT_PASSWORD:-admin}@inclusivedb:27017/locations?authSource=admin
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+#      - AWS_REGION=${AWS_REGION:-us-east-1}
+#      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+#      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+#      - SPRING_MAIL_HOST=${MAIL_HOST:-smtp.gmail.com}
+#      - SPRING_MAIL_PORT=${MAIL_PORT:-587}
+#      - SPRING_MAIL_USERNAME=${MAIL_USERNAME}
+#      - SPRING_MAIL_PASSWORD=${MAIL_PASSWORD}
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+    networks:
+      - microservices-net
+
+  # ============================================
+  # Gateway Service (Ãºltimo en iniciar)
+  # ============================================
+  gateway-service:
+    build:
+      context: .
+      dockerfile: gateway-service/Dockerfile
+    container_name: gateway-service
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      authentication-service:
+        condition: service_started
+#      account-api:
+#        condition: service_started
+      route-api:
+        condition: service_started
+      location-api:
+        condition: service_started
+    networks:
+      - microservices-net
+
+# ============================================
+# Networks
+# ============================================
+networks:
+  microservices-net:
+    driver: bridge
+
+# ============================================
+# Volumes
+# ============================================
+volumes:
+  mongodb_data:
+    driver: local
+  mongodb_config:
+    driver: local
 
