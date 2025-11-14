@@ -2,18 +2,19 @@ package com.ufro.microservice.location_API.spot.repository.impl;
 
 import com.mongodb.client.result.UpdateResult;
 import com.ufro.microservice.location_API.spot.model.Place;
-import com.ufro.microservice.location_API.spot.model.enums.ChoiceRate;
 import com.ufro.microservice.location_API.spot.repository.IPLaceRepositoryCustom;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.stereotype.Repository;
 
-public class PlaceRepositoryImpl implements IPLaceRepositoryCustom {
+@Repository
+public class IPlaceRepositoryImpl implements IPLaceRepositoryCustom {
 
     private final MongoTemplate mongoTemplate;
 
-    public PlaceRepositoryImpl(MongoTemplate mongoTemplate) {
+    public IPlaceRepositoryImpl(MongoTemplate mongoTemplate) {
         this.mongoTemplate = mongoTemplate;
     }
 
