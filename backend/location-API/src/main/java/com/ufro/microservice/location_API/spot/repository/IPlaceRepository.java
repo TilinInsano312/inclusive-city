@@ -2,14 +2,12 @@ package com.ufro.microservice.location_API.spot.repository;
 
 import com.ufro.microservice.location_API.spot.dto.AggregatedStatDTO;
 import com.ufro.microservice.location_API.spot.model.Place;
-import com.ufro.microservice.location_API.spot.model.Spot;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.Optional;
 
-public interface IPlaceRepository extends MongoRepository<Place, String>, IPLaceRepositoryCustom{
+public interface IPlaceRepository extends MongoRepository<Place, String>, IPLaceRepositoryCustom {
     Optional<Place> findByPlaceId(String placeId);
     boolean existsPlaceByPlaceId (String placeId);
 
