@@ -2,18 +2,17 @@ services:
   # ============================================
   # Base de Datos
   # ============================================
-  mongodb:
-    image: mongo:7
-    container_name: mongodb
+  inclusive-mongodb:
+    image: mongo:8.0.3
+    container_name: inclusive-mongodb
     restart: unless-stopped
     ports:
       - "27017:27017"
     environment:
-      - MONGO_INITDB_DATABASE=inclusivedb
-      - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USER:-admin}
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD:-admin123}
-    env_file:
-      - .env
+      - MONGO_INITDB_DATABASE=${SPRING_DATA_MONGODB_DATABASE}
+      - MONGO_INITDB_ROOT_HOST=${SPRING_DATA_MONGODB_HOST}
+      - MONGO_INITDB_ROOT_USERNAME=${SPRING_DATA_MONGODB_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${SPRING_DATA_MONGODB_PASSWORD}
     volumes:
       - mongodb_data:/data/db
       - mongodb_config:/data/configdb
@@ -36,11 +35,15 @@ services:
     restart: unless-stopped
     ports:
       - "8761:8761"
+    env_file:
+      - .env
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - EUREKA_INSTANCE_HOSTNAME=eureka-server
     networks:
       - microservices-net
+    depends_on:
+      - inclusive-mongodb
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8761/actuator/health"]
       interval: 10s
@@ -56,17 +59,18 @@ services:
       context: .
       dockerfile: authentication-service/Dockerfile
     container_name: authentication-service
-    restart: unless-stopped
     ports:
       - "9090:9090"
+    env_file:
+      - .env
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
-      - SPRING_DATA_MONGODB_URI=mongodb://${MONGO_ROOT_USER:-admin}:${MONGO_ROOT_PASSWORD:-admin}@inclusivedb:27017/authentication?authSource=admin
+      - SPRING_DATA_MONGODB_URI=${SPRING_DATA_MONGODB_URI}
     depends_on:
       eureka-server:
         condition: service_healthy
-      mongodb:
+      inclusive-mongodb:
         condition: service_healthy
     networks:
       - microservices-net
@@ -102,17 +106,18 @@ services:
       context: .
       dockerfile: route-API/Dockerfile
     container_name: route-api
-    restart: unless-stopped
     ports:
       - "8060:8060"
+    env_file:
+      - .env
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_DATA_MONGODB_URI=mongodb://${MONGO_ROOT_USER:-admin}:${MONGO_ROOT_PASSWORD:-admin}@localhost:27017/inclusivedb/routes?authSource=admin
+      - SPRING_DATA_MONGODB_URI=${SPRING_DATA_MONGODB_URI}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
     depends_on:
       eureka-server:
         condition: service_healthy
-      mongodb:
+      inclusive-mongodb:
         condition: service_healthy
     networks:
       - microservices-net
@@ -125,12 +130,13 @@ services:
       context: .
       dockerfile: location-API/Dockerfile
     container_name: location-api
-    restart: unless-stopped
     ports:
       - "8070:8070"
+    env_file:
+      - .env
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_DATA_MONGODB_URI=mongodb://${MONGO_ROOT_USER:-admin}:${MONGO_ROOT_PASSWORD:-admin}@inclusivedb:27017/locations?authSource=admin
+      - SPRING_DATA_MONGODB_URI=${SPRING_DATA_MONGODB_URI}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
 #      - AWS_REGION=${AWS_REGION:-us-east-1}
 #      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
@@ -142,7 +148,7 @@ services:
     depends_on:
       eureka-server:
         condition: service_healthy
-      mongodb:
+      inclusive-mongodb:
         condition: service_healthy
     networks:
       - microservices-net
@@ -155,9 +161,10 @@ services:
       context: .
       dockerfile: gateway-service/Dockerfile
     container_name: gateway-service
-    restart: unless-stopped
     ports:
       - "8080:8080"
+    env_file:
+      - .env
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
@@ -187,7 +194,4 @@ networks:
 # ============================================
 volumes:
   mongodb_data:
-    driver: local
   mongodb_config:
-    driver: local
-
