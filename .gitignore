@@ -24,3 +24,29 @@ hs_err_pid*
 replay_pid*
 
 .env
+
+# ====================================
+# FRONTEND (Flutter)
+# ====================================
+frontend/.dart_tool/
+frontend/.flutter-plugins*
+frontend/.packages
+frontend/.pub*/
+frontend/build/
+
+# IDE
+frontend/.idea/
+frontend/.vscode/
+frontend/*.iml
+
+# Android
+frontend/**/android/local.properties
+frontend/**/android/.gradle/
+frontend/**/android/captures/
+frontend/**/android/key.properties
+
+# iOS
+frontend/**/ios/Pods/
+frontend/**/ios/.symlinks/
+frontend/**/ios/**/xcuserdata/
+frontend/**/ios/Flutter/.last_build_id
