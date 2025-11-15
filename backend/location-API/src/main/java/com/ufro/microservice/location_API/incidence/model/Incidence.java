@@ -3,7 +3,6 @@ package com.ufro.microservice.location_API.incidence.model;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.MongoId;
 
 import java.util.Date;
 
@@ -12,7 +11,7 @@ public class Incidence {
     @Id
     private String id;
     @Indexed(unique = true)
-    private String place_id;
+    private String placeId;
     private double latitude;
     private double longitude;
     private String incidence;
@@ -20,9 +19,9 @@ public class Incidence {
     private String idUser;
     private String image;
 
-    public Incidence(String id, String place_id, double latitude, double longitude, String incidence, Date date, String idUser, String image) {
+    public Incidence(String id, String placeId, double latitude, double longitude, String incidence, Date date, String idUser, String image) {
         this.id = id;
-        this.place_id = place_id;
+        this.placeId = placeId;
         this.latitude = latitude;
         this.longitude = longitude;
         this.incidence = incidence;
@@ -43,11 +42,11 @@ public class Incidence {
     }
 
     public String getPlace_id() {
-        return place_id;
+        return placeId;
     }
 
     public void setPlace_id(String place_id) {
-        this.place_id = place_id;
+        this.placeId = place_id;
     }
 
     public double getLatitude() {
