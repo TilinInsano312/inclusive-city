@@ -1,10 +1,10 @@
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
-//import 'package:inclusivecity_frontend/features/map/data/datasources/place_remote_data_source_impl.dart';
-import 'package:inclusivecity_frontend/features/map/data/datasources/google_place_remote_data_source.dart';
 import 'package:inclusivecity_frontend/features/map/data/datasources/place_remote_data_source.dart';
+import 'package:inclusivecity_frontend/features/map/data/datasources/place_remote_data_source_impl.dart';
 import 'package:inclusivecity_frontend/features/map/data/repositories/place_repository_impl.dart';
 import 'package:inclusivecity_frontend/features/map/domain/repositories/place_repository.dart';
+import 'package:inclusivecity_frontend/features/map/domain/usecases/get_place_detail.dart';
 import 'package:inclusivecity_frontend/features/map/domain/usecases/search_places.dart';
 import 'package:inclusivecity_frontend/features/map/presentation/bloc/place_bloc.dart';
 
@@ -18,13 +18,17 @@ Future<void> init() async {
   // Se registra como 'factory' porque queremos una nueva instancia cada vez
   // que se solicita, especialmente en la UI.
   sl.registerFactory(
-    () => PlacesBloc(searchPlacesUseCase: sl()),
+    () => PlacesBloc(
+      searchPlacesUseCase: sl(),
+      getPlaceDetailsUseCase: sl(), 
+    ),
   );
 
   // Use Cases
   // Se registra como 'lazySingleton' porque solo necesitamos una instancia
   // y solo se crea cuando se usa por primera vez.
   sl.registerLazySingleton(() => SearchPlaces(sl()));
+  sl.registerLazySingleton(() => GetPlaceDetails(sl()));
 
   // Repository
   sl.registerLazySingleton<PlaceRepository>(
@@ -35,14 +39,9 @@ Future<void> init() async {
   );
 
   // Data Sources
-  // Cambiar entre Google y tu Backend es tan simple como
-  // comentar y descomentar una línea.
+  // Backend como fuente principal de datos
   sl.registerLazySingleton<PlaceRemoteDataSource>(
-    // Implementación de Google
-    () => GooglePlacesDataSourceImpl(client: sl()),
-    
-    // Implementación del Backend 
-    // () => BackendPlacesDataSourceImpl(client: sl()),
+    () => BackendPlacesDataSourceImpl(client: sl()),
   );
 
   // --- Core ---
