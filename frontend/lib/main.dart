@@ -3,8 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:inclusivecity_frontend/features/map/presentation/bloc/place_bloc.dart';
 import 'package:inclusivecity_frontend/features/map/presentation/pages/map_screen.dart';
-import 'package:inclusivecity_frontend/injection_container.dart' as di; // Importa GetIt
-import 'package:inclusivecity_frontend/injection_container.dart'; // Importa el service locator (sl)
+import 'package:inclusivecity_frontend/injection_container.dart' as di;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,7 +28,7 @@ class MyApp extends StatelessWidget {
       ),
       debugShowCheckedModeBanner: false,
       home: BlocProvider(
-        create: (_) => sl<PlacesBloc>(),
+        create: (_) => di.sl<PlacesBloc>(),
         child: const MapPage(),
       ),
     );

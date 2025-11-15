@@ -19,21 +19,21 @@ Future<void> init() async {
   // que se solicita, especialmente en la UI.
   sl.registerFactory(
     () => PlacesBloc(
-      searchPlacesUseCase: sl(),
-      getPlaceDetailsUseCase: sl(), 
+      searchPlacesUseCase: sl<SearchPlaces>(),
+      getPlaceDetailsUseCase: sl<GetPlaceDetails>(), 
     ),
   );
 
   // Use Cases
   // Se registra como 'lazySingleton' porque solo necesitamos una instancia
   // y solo se crea cuando se usa por primera vez.
-  sl.registerLazySingleton(() => SearchPlaces(sl()));
-  sl.registerLazySingleton(() => GetPlaceDetails(sl()));
+  sl.registerLazySingleton(() => SearchPlaces(sl<PlaceRepository>()));
+  sl.registerLazySingleton(() => GetPlaceDetails(sl<PlaceRepository>()));
 
   // Repository
   sl.registerLazySingleton<PlaceRepository>(
     () => PlaceRepositoryImpl(
-      remoteDataSource: sl(),
+      remoteDataSource: sl<PlaceRemoteDataSource>(),
       // networkInfo: sl(), // (Opcional)
     ),
   );
@@ -41,7 +41,7 @@ Future<void> init() async {
   // Data Sources
   // Backend como fuente principal de datos
   sl.registerLazySingleton<PlaceRemoteDataSource>(
-    () => BackendPlacesDataSourceImpl(client: sl()),
+    () => BackendPlacesDataSourceImpl(client: sl<http.Client>()),
   );
 
   // --- Core ---
