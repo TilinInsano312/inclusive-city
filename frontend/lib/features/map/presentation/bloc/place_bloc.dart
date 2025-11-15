@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:inclusivecity_frontend/features/map/domain/entities/place_details.dart';
 import 'package:inclusivecity_frontend/features/map/domain/entities/place_suggestion.dart';
 import 'package:inclusivecity_frontend/features/map/domain/usecases/search_places.dart';
 import 'package:stream_transform/stream_transform.dart';
@@ -16,7 +17,7 @@ EventTransformer<E> debounceTransformer<E>(Duration duration) {
 class PlacesBloc extends Bloc<PlacesEvent, PlacesState> {
   final SearchPlaces searchPlacesUseCase;
 
-  PlacesBloc({required this.searchPlacesUseCase}) : super(PlacesInitial()) {
+  PlacesBloc({required this.searchPlacesUseCase, required Object getPlaceDetailsUseCase}) : super(PlacesInitial()) {
 
     on<SearchPlacesEvent>(
       _onSearchPlaces,

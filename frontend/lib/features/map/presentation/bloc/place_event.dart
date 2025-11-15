@@ -1,19 +1,32 @@
 part of 'place_bloc.dart';
 
 abstract class PlacesEvent extends Equatable {
-  const PlacesEvent();
-
   @override
   List<Object> get props => [];
 }
 
 class SearchPlacesEvent extends PlacesEvent {
   final String query;
-
-  const SearchPlacesEvent(this.query);
-
+  SearchPlacesEvent(this.query);
   @override
   List<Object> get props => [query];
 }
 
 class ClearSearchEvent extends PlacesEvent {}
+
+class SelectPlaceEvent extends PlacesEvent {
+  final String placeId;
+  SelectPlaceEvent(this.placeId);
+  @override
+  List<Object> get props => [placeId];
+}
+
+class GetUserLocationEvent extends PlacesEvent {}
+
+class GetNearbyPlacesEvent extends PlacesEvent {
+  final double latitude;
+  final double longitude;
+  GetNearbyPlacesEvent(this.latitude, this.longitude);
+  @override
+  List<Object> get props => [latitude, longitude];
+}
