@@ -24,12 +24,14 @@ class PlaceDetailsModel extends PlaceDetails {
   // Factory para backend (location-API)
   factory PlaceDetailsModel.fromBackendJson(Map<String, dynamic> json) {
     final location = json['location'] as Map<String, dynamic>;
+    // WORKAROUND: El backend tiene lat/lng invertidos en el constructor de LocationDTO
+    // Intercambiamos latitude y longitude para compensar el bug del backend
     return PlaceDetailsModel(
       placeId: json['placeId'] as String,
       name: json['name'] as String,
       address: json['address'] as String,
-      latitude: location['latitude'] as double,
-      longitude: location['longitude'] as double,
+      latitude: location['longitude'] as double,  // Invertido: tomamos longitude como latitude
+      longitude: location['latitude'] as double,   // Invertido: tomamos latitude como longitude
       photos: List<String>.from(json['photos'] ?? []),
       medals: List<String>.from(json['medals'] ?? []),
       rating: (json['rating'] as num).toDouble(),
