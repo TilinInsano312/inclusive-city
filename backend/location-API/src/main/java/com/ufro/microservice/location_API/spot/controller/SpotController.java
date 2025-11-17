@@ -1,10 +1,8 @@
 package com.ufro.microservice.location_API.spot.controller;
 
 import com.ufro.microservice.location_API.common.response.ApiResponse;
-import com.ufro.microservice.location_API.spot.dto.DTOSpot;
-import com.ufro.microservice.location_API.spot.repository.ISpotRepository;
+import com.ufro.microservice.location_API.spot.dto.SpotDTO;
 import com.ufro.microservice.location_API.spot.service.ISpotService;
-import com.ufro.microservice.location_API.spot.service.SpotService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,16 +15,14 @@ import java.util.List;
 @RequestMapping("inclusive/api/v1/locations/")
 public class SpotController {
     private final ISpotService spotService;
-    private final ISpotRepository spotRepository;
 
-    public SpotController(ISpotService spotService, ISpotRepository spotRepository) {
+    public SpotController(ISpotService spotService) {
         this.spotService = spotService;
-        this.spotRepository = spotRepository;
     }
 
     @PostMapping("saves")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<ApiResponse<DTOSpot>> insertASpot(@RequestBody @Valid DTOSpot dtoSpot) {
+    public ResponseEntity<ApiResponse<SpotDTO>> insertASpot(@RequestBody @Valid SpotDTO dtoSpot) {
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 new ApiResponse<>(
                         this.spotService.insertASpot(dtoSpot)
@@ -35,7 +31,7 @@ public class SpotController {
     }
 
     @GetMapping("/{idUser}")
-    public ResponseEntity<ApiResponse<List<DTOSpot>>> getSpotByIdUser(@PathVariable @Valid String idUser) {
+    public ResponseEntity<ApiResponse<List<SpotDTO>>> getSpotByIdUser(@PathVariable @Valid String idUser) {
         return ResponseEntity.ok(
                 new ApiResponse<>(
                         this.spotService.getAllSpotsById(idUser)
