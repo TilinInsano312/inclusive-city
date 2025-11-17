@@ -25,6 +25,7 @@ class _SearchBottomSheetState extends State<SearchBottomSheet> {
   final _sheetController = DraggableScrollableController();
   late stt.SpeechToText _speech;
   bool _isListening = false;
+  List<PlaceSuggestion> _history = [];
 
   @override
   void initState() {
@@ -32,6 +33,10 @@ class _SearchBottomSheetState extends State<SearchBottomSheet> {
     _speech = stt.SpeechToText();
     _focusNode.addListener(_onFocusChange);
     _sheetController.addListener(_onSheetSizeChange);
+    
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<PlacesBloc>().add(LoadSearchHistoryEvent());
+    });
   }
 
   void _onFocusChange() {
@@ -120,6 +125,9 @@ class _SearchBottomSheetState extends State<SearchBottomSheet> {
       builder: (BuildContext context, ScrollController scrollController) {
         return BlocBuilder<PlacesBloc, PlacesState>(
           builder: (context, state) {
+            if (state is SearchHistoryLoaded) {
+              _history = state.history;
+            }
             return Container(
               decoration: const BoxDecoration(
                 color: AppColors.surface,
@@ -174,7 +182,13 @@ class _SearchBottomSheetState extends State<SearchBottomSheet> {
     if (state is PlacesError) {
       return _buildInfoMessage(Icons.error_outline, state.message, isError: true);
     }
-    return _buildDefaultContent();
+    if (state is SearchHistoryLoaded) {
+      return _buildDefaultContent(state.history);
+    }
+    if (state is PlaceDetailsLoaded || state is PlacesInitial) {
+      return _buildDefaultContent(_history);
+    }
+    return _buildDefaultContent(_history);
   }
 
   /// Barra gris para indicar que el sheet es deslizable
@@ -223,8 +237,13 @@ class _SearchBottomSheetState extends State<SearchBottomSheet> {
           contentPadding: const EdgeInsets.symmetric(vertical: 14.0),
         ),
         onChanged: (query) {
-          // Dispara el evento de búsqueda
-          context.read<PlacesBloc>().add(SearchPlacesEvent(query));
+          if (query.isEmpty) {
+            // Si el campo está vacío, cargar historial
+            context.read<PlacesBloc>().add(LoadSearchHistoryEvent());
+          } else {
+            // Dispara el evento de búsqueda
+            context.read<PlacesBloc>().add(SearchPlacesEvent(query));
+          }
         },
       ),
     );
@@ -294,7 +313,7 @@ class _SearchBottomSheetState extends State<SearchBottomSheet> {
   }
 
   /// Muestra el contenido por defecto (Recientes, Mis Listas)
-  Widget _buildDefaultContent() {
+  Widget _buildDefaultContent(List<PlaceSuggestion> history) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -310,20 +329,34 @@ class _SearchBottomSheetState extends State<SearchBottomSheet> {
           ),
         ),
         const SizedBox(height: 10),
-        _buildListTile(
-          icon: Icons.history,
-          title: "Lugar reciente 1",
-          onTap: () {
-            // TODO: Implementar lógica para seleccionar lugar reciente
-          },
-        ),
-        _buildListTile(
-          icon: Icons.history,
-          title: "Lugar reciente 2",
-          onTap: () {
-            // TODO: Implementar lógica para seleccionar lugar reciente
-          },
-        ),
+        if (history.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            child: Text(
+              "No hay búsquedas recientes",
+              style: TextStyle(
+                color: AppColors.neutralDarkNormal,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          )
+        else
+          ...history.map((place) {
+            return _buildListTile(
+              icon: Icons.history,
+              title: place.description,
+              subtitle: place.address,
+              onTap: () {
+                context.read<PlacesBloc>().add(SelectPlaceEvent(place.placeId));
+                _focusNode.unfocus();
+                _sheetController.animateTo(
+                  0.15,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                );
+              },
+            );
+          }).toList(),
         const Divider(height: 32),
 
         // --- Sección Mis Listas ---
@@ -371,12 +404,23 @@ class _SearchBottomSheetState extends State<SearchBottomSheet> {
     return Column(
       children: List.generate(suggestions.length, (index) {
         final suggestion = suggestions[index];
+        
         return _buildListTile(
           icon: Icons.location_on,
           title: suggestion.description,
+          subtitle: suggestion.address,
           onTap: () {
+            // Guardar en historial
+            context.read<PlacesBloc>().add(SaveToHistoryEvent(suggestion));
+            
             // Disparar evento para obtener detalles del lugar y mover el mapa
             context.read<PlacesBloc>().add(SelectPlaceEvent(suggestion.placeId));
+            
+            // Limpiar campo de búsqueda
+            _searchController.clear();
+            
+            // Cargar historial para la próxima vez
+            context.read<PlacesBloc>().add(LoadSearchHistoryEvent());
             
             _focusNode.unfocus(); // Ocultar teclado
             _sheetController.animateTo(
