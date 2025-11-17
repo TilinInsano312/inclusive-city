@@ -1,5 +1,7 @@
 package com.ufro.microservice.location_API.spot.dto;
 
+import com.ufro.microservice.location_API.common.dto.LocationDTO;
+
 import java.util.List;
 
 public class PlaceSearchDTO {

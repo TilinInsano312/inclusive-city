@@ -6,6 +6,7 @@ import com.google.maps.PlaceDetailsRequest;
 import com.google.maps.PlacesApi;
 import com.google.maps.model.PlaceDetails;
 import com.google.maps.model.PlacesSearchResponse;
+import com.ufro.microservice.location_API.common.dto.LocationDTO;
 import com.ufro.microservice.location_API.spot.dto.*;
 import com.ufro.microservice.location_API.spot.mapper.IPlaceMapper;
 import com.ufro.microservice.location_API.spot.repository.IPlaceRepository;

@@ -1,10 +1,10 @@
-package com.ufro.microservice.location_API.spot.model;
+package com.ufro.microservice.location_API.common.dto;
 
-public class Location {
+public class LocationDTO {
     private double longitude;
     private double latitude;
 
-    public Location(double longitude, double latitude) {
+    public LocationDTO(double longitude, double latitude) {
         this.longitude = longitude;
         this.latitude = latitude;
     }
