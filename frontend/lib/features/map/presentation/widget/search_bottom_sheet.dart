@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:inclusivecity_frontend/constants/app_colors.dart';
 import 'package:inclusivecity_frontend/features/map/domain/entities/place_suggestion.dart';
 import 'package:inclusivecity_frontend/features/map/presentation/bloc/place_bloc.dart';
@@ -22,10 +23,13 @@ class _SearchBottomSheetState extends State<SearchBottomSheet> {
   final _searchController = TextEditingController();
   final _focusNode = FocusNode();
   final _sheetController = DraggableScrollableController();
+  late stt.SpeechToText _speech;
+  bool _isListening = false;
 
   @override
   void initState() {
     super.initState();
+    _speech = stt.SpeechToText();
     _focusNode.addListener(_onFocusChange);
     _sheetController.addListener(_onSheetSizeChange);
   }
@@ -56,6 +60,54 @@ class _SearchBottomSheetState extends State<SearchBottomSheet> {
     _sheetController.removeListener(_onSheetSizeChange);
     _sheetController.dispose();
     super.dispose();
+  }
+
+  Future<void> _startListening() async {
+    bool available = await _speech.initialize(
+      onStatus: (status) {
+        if (status == 'done' || status == 'notListening') {
+          setState(() => _isListening = false);
+        }
+      },
+      onError: (error) {
+        setState(() => _isListening = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error de reconocimiento de voz: ${error.errorMsg}'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      },
+    );
+
+    if (available) {
+      setState(() => _isListening = true);
+      _speech.listen(
+        onResult: (result) {
+          setState(() {
+            _searchController.text = result.recognizedWords;
+          });
+          // Disparar la búsqueda automáticamente
+          if (result.finalResult) {
+            context.read<PlacesBloc>().add(SearchPlacesEvent(_searchController.text));
+          }
+        },
+        localeId: 'es_ES', // Español
+        listenMode: stt.ListenMode.confirmation,
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Reconocimiento de voz no disponible. Verifica los permisos.'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
+  }
+
+  void _stopListening() {
+    _speech.stop();
+    setState(() => _isListening = false);
   }
 
   @override
@@ -152,10 +204,16 @@ class _SearchBottomSheetState extends State<SearchBottomSheet> {
           fillColor: AppColors.neutralLight,
           prefixIcon: const Icon(Icons.search, color: AppColors.primaryNormal),
           suffixIcon: IconButton(
-            // TODO: Implementar lógica de reconocimiento de voz
-            icon: const Icon(Icons.mic, color: AppColors.primaryNormal),
+            icon: Icon(
+              _isListening ? Icons.mic : Icons.mic_none,
+              color: _isListening ? AppColors.error : AppColors.primaryNormal,
+            ),
             onPressed: () {
-              // TODO: Implementar navegación a la vista de búsqueda por voz
+              if (_isListening) {
+                _stopListening();
+              } else {
+                _startListening();
+              }
             },
           ),
           border: OutlineInputBorder(
@@ -317,17 +375,15 @@ class _SearchBottomSheetState extends State<SearchBottomSheet> {
           icon: Icons.location_on,
           title: suggestion.description,
           onTap: () {
-            // Acción al seleccionar un lugar de la búsqueda
-            print("Lugar seleccionado: ${suggestion.placeId}");
+            // Disparar evento para obtener detalles del lugar y mover el mapa
+            context.read<PlacesBloc>().add(SelectPlaceEvent(suggestion.placeId));
+            
             _focusNode.unfocus(); // Ocultar teclado
             _sheetController.animateTo(
               0.15,
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOut,
             );
-            context.read<PlacesBloc>().add(ClearSearchEvent()); // Limpia resultados
-            
-            // TODO: Aquí moverías el mapa, mostrarías detalles, etc.
           },
         );
       }),
