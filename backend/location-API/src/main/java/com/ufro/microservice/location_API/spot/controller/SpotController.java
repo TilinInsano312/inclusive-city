@@ -3,6 +3,7 @@ package com.ufro.microservice.location_API.spot.controller;
 import com.ufro.microservice.location_API.common.response.ApiResponse;
 import com.ufro.microservice.location_API.spot.dto.DTOSpot;
 import com.ufro.microservice.location_API.spot.repository.ISpotRepository;
+import com.ufro.microservice.location_API.spot.service.ISpotService;
 import com.ufro.microservice.location_API.spot.service.SpotService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -15,10 +16,10 @@ import java.util.List;
 @RestController
 @RequestMapping("inclusive/api/v1/locations/")
 public class SpotController {
-    private final SpotService spotService;
+    private final ISpotService spotService;
     private final ISpotRepository spotRepository;
 
-    public SpotController(SpotService spotService, ISpotRepository spotRepository) {
+    public SpotController(ISpotService spotService, ISpotRepository spotRepository) {
         this.spotService = spotService;
         this.spotRepository = spotRepository;
     }

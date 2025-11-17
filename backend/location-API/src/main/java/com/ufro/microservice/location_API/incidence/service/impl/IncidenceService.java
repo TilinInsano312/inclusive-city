@@ -4,7 +4,6 @@ import com.ufro.microservice.location_API.incidence.dto.IncidenceDTO;
 import com.ufro.microservice.location_API.incidence.mapper.IIncidenceMapper;
 import com.ufro.microservice.location_API.incidence.repository.IIncidenceRepository;
 import com.ufro.microservice.location_API.incidence.service.IIncidenceService;
-import com.ufro.microservice.location_API.spot.service.PlacesService;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import java.time.Instant;

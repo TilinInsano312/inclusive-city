@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class SpotService {
+public class SpotService implements ISpotService {
     private final ISpotRepository spotRepository;
     private final ISpotMapper spotMapper;
 
@@ -16,11 +16,13 @@ public class SpotService {
         this.spotRepository = spotRepository;
         this.spotMapper = spotMapper;
     }
+    @Override
     public DTOSpot insertASpot(DTOSpot spot) {
         return spotMapper.toDTOSpot(
                 spotRepository.insert(spotMapper.toSpot(spot))
         );
     }
+    @Override
     public List<DTOSpot> getAllSpotsById(String idUser) {
         return spotRepository.findByUserId(idUser)
                 .stream()
