@@ -16,18 +16,29 @@ class BackendPlacesDataSourceImpl implements PlaceRemoteDataSource {
   Future<List<PlaceModel>> getPlaceSuggestions(String query) async {
     final response = await client.post(
       Uri.parse(ApiConstants.placesSearch),
-      headers: ApiConstants.jsonHeaders,
-      body: json.encode(query),
+      headers: {
+        ...ApiConstants.jsonHeaders,
+        'Content-Type': 'application/json; charset=utf-8',
+      },
+      body: utf8.encode(json.encode(query)),
     );
 
     if (response.statusCode == 200) {
-      final Map<String, dynamic> responseBody = json.decode(response.body);
-      final List dataList = responseBody['data'] as List;
+      final String responseBody = utf8.decode(response.bodyBytes);
+      final Map<String, dynamic> jsonResponse = json.decode(responseBody);
+      final List dataList = jsonResponse['data'] as List;
 
+      print("Backend response - Total lugares: ${dataList.length}");
+      
       // Convertir PlaceSearchResponseDTO a PlaceModel
-      return dataList
-          .map((json) => PlaceModel.fromBackendJson(json))
+      final places = dataList
+          .map((json) {
+            print(" Lugar: ${json['name']} - Dirección: ${json['address']}");
+            return PlaceModel.fromBackendJson(json);
+          })
           .toList();
+      
+      return places;
     } else {
       throw ServerException();
     }
@@ -37,14 +48,18 @@ class BackendPlacesDataSourceImpl implements PlaceRemoteDataSource {
   Future<PlaceDetailsModel> getPlaceDetails(String placeId) async {
     final response = await client.get(
       Uri.parse(ApiConstants.placeDetails(placeId)),
-      headers: ApiConstants.jsonHeaders,
+      headers: {
+        ...ApiConstants.jsonHeaders,
+        'Content-Type': 'application/json; charset=utf-8',
+      },
       // headers: ApiConstants.authHeaders(token), // Usar cuando tengas auth
     );
 
     if (response.statusCode == 200) {
-      final Map<String, dynamic> responseBody = json.decode(response.body);
-      final Map<String, dynamic> data = responseBody['data'];
-      return PlaceDetailsModel.fromBackendJson(data);
+      final String responseBody = utf8.decode(response.bodyBytes);
+      final Map<String, dynamic> jsonResponse = json.decode(responseBody);
+      final Map<String, dynamic> data = jsonResponse['data'];
+      return PlaceDetailsModel.fromJson(data);
     } else {
       throw ServerException();
     }
