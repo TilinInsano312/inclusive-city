@@ -2,6 +2,7 @@ package com.ufro.microservice.location_API.incidence.controller;
 
 //import com.ufro.microservice.location_API.incidence.service.SafeSearchService;
 import com.ufro.microservice.location_API.common.response.ApiResponse;
+import com.ufro.microservice.location_API.incidence.service.impl.ImageConversionService;
 import com.ufro.microservice.location_API.incidence.service.impl.StorageService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,7 @@ public class ImageUploadController {
 
 //    private final SafeSearchService safeSearchService;
     private final StorageService storageService;
+    private final ImageConversionService imageConversionService;
 
 //    public ImageUploadController(SafeSearchService safeSearchService,
 //                                 StorageService storageService) {
@@ -28,8 +30,9 @@ public class ImageUploadController {
 //    }
 
 
-    public ImageUploadController(StorageService storageService) {
+    public ImageUploadController(StorageService storageService, ImageConversionService imageConversionService) {
         this.storageService = storageService;
+        this.imageConversionService = imageConversionService;
     }
 
     @PostMapping("/upload") //to do: refactor
@@ -45,15 +48,12 @@ public class ImageUploadController {
 //                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 //                        .body("La imagen contiene contenido inapropiado.");
 //            }
-            String originalFileName = file.getOriginalFilename();
-            String fileExtension = (originalFileName != null) ?
-                    originalFileName.substring(originalFileName.lastIndexOf(".")) : "";
+            // --- Paso 2: "Comprimir" (Convertir a JPEG de calidad 80%) ---
+            byte[] compressedImageBytes = imageConversionService.compressToJpeg(imageBytes, 0.8f);
 
-            String uniqueFileName = UUID.randomUUID().toString() + fileExtension;
+            String finalFileName = UUID.randomUUID().toString() + ".jpg";
 
-            storageService.uploadFile(uniqueFileName, imageBytes);
-
-            return ResponseEntity.ok(new ApiResponse<>(uniqueFileName) );
+            return ResponseEntity.ok(new ApiResponse<>(storageService.uploadFile(finalFileName, compressedImageBytes)) );
         } catch (Exception e) {
             throw new ResponseStatusException(
                     HttpStatus.INTERNAL_SERVER_ERROR, "Error al procesar el archivo.", e);
