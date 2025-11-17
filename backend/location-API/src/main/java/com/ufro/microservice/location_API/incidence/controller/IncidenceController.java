@@ -1,7 +1,8 @@
 package com.ufro.microservice.location_API.incidence.controller;
 
+import com.ufro.microservice.location_API.common.response.ApiResponse;
 import com.ufro.microservice.location_API.incidence.dto.IncidenceDTO;
-import com.ufro.microservice.location_API.incidence.service.IncidenceService;
+import com.ufro.microservice.location_API.incidence.service.impl.IncidenceService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,16 +17,13 @@ public class IncidenceController {
     }
 
     @PostMapping("/incidence" )
-    public ResponseEntity<IncidenceDTO> insertAIncidence(@RequestBody IncidenceDTO incidenceDTO) {
-        if (incidenceDTO == null) {
-            return ResponseEntity.badRequest().build();
-        }
-        return ResponseEntity.ok(incidenceService.insertAIncidence(incidenceDTO));
+    public ResponseEntity<ApiResponse<IncidenceDTO>> insertAIncidence(@RequestBody IncidenceDTO incidenceDTO) {
+        return ResponseEntity.status(201).body(new ApiResponse<>(incidenceService.insertAIncidence(incidenceDTO)));
     }
 
     @GetMapping("/incidence/all" )
-    public ResponseEntity<List<IncidenceDTO>> getAllIncidences() {
-        return ResponseEntity.ok(incidenceService.getAllIncidences());
+    public ResponseEntity<ApiResponse<List<IncidenceDTO>>> getAllIncidences() {
+        return ResponseEntity.ok().body(new ApiResponse<>(incidenceService.getAllIncidences()));
     }
 
 }

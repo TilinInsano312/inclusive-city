@@ -1,9 +1,11 @@
 package com.ufro.microservice.location_API.incidence.model;
 
+import com.ufro.microservice.location_API.common.model.Location;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.Instant;
 import java.util.Date;
 
 @Document(collection = "incidences")
@@ -12,25 +14,23 @@ public class Incidence {
     private String id;
     @Indexed(unique = true)
     private String placeId;
-    private double latitude;
-    private double longitude;
+    private Location location;
     private String incidence;
     private Date date;
-    private String idUser;
+    @Indexed(expireAfter = "0s")
+    private Instant expiresAt;
+    private String userId;
     private String image;
 
-    public Incidence(String id, String placeId, double latitude, double longitude, String incidence, Date date, String idUser, String image) {
+    public Incidence(String id, String placeId, Location location, String incidence, Date date, Instant expiresAt, String userId, String image) {
         this.id = id;
         this.placeId = placeId;
-        this.latitude = latitude;
-        this.longitude = longitude;
+        this.location = location;
         this.incidence = incidence;
         this.date = date;
-        this.idUser = idUser;
+        this.expiresAt = expiresAt;
+        this.userId = userId;
         this.image = image;
-    }
-
-    public Incidence() {
     }
 
     public String getId() {
@@ -41,36 +41,20 @@ public class Incidence {
         this.id = id;
     }
 
-    public String getPlace_id() {
+    public String getPlaceId() {
         return placeId;
     }
 
-    public void setPlace_id(String place_id) {
-        this.placeId = place_id;
+    public void setPlaceId(String placeId) {
+        this.placeId = placeId;
     }
 
-    public double getLatitude() {
-        return latitude;
+    public Location getLocation() {
+        return location;
     }
 
-    public void setLatitude(double latitude) {
-        this.latitude = latitude;
-    }
-
-    public double getLongitude() {
-        return longitude;
-    }
-
-    public void setLongitude(double longitude) {
-        this.longitude = longitude;
-    }
-
-    public Date getDate() {
-        return date;
-    }
-
-    public void setDate(Date date) {
-        this.date = date;
+    public void setLocation(Location location) {
+        this.location = location;
     }
 
     public String getIncidence() {
@@ -81,19 +65,35 @@ public class Incidence {
         this.incidence = incidence;
     }
 
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
+    public Instant getExpiresAt() {
+        return expiresAt;
+    }
+
+    public void setExpiresAt(Instant expiresAt) {
+        this.expiresAt = expiresAt;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
     public String getImage() {
         return image;
     }
 
     public void setImage(String image) {
         this.image = image;
-    }
-
-    public String getIdUser() {
-        return idUser;
-    }
-
-    public void setIdUser(String idUser) {
-        this.idUser = idUser;
     }
 }
