@@ -8,3 +8,8 @@ class ServerException implements Exception {
   ServerException([this.message = "Server Exception occurred"]);
   
 }
+
+class CacheException implements Exception {
+  final String message;
+  CacheException([this.message = "Cache Exception ocurred"]);
+}
