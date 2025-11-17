@@ -58,3 +58,12 @@ class NearbyPlacesLoaded extends PlacesState {
   @override
   List<Object> get props => [places];
 }
+
+class SearchHistoryLoaded extends PlacesState {
+  final List<PlaceSuggestion> history;
+
+  SearchHistoryLoaded(this.history);
+
+  @override
+  List<Object> get props => [history];
+}

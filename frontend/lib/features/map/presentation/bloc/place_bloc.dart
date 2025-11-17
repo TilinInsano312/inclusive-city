@@ -5,6 +5,8 @@ import 'package:inclusivecity_frontend/features/map/domain/entities/place_detail
 import 'package:inclusivecity_frontend/features/map/domain/entities/place_suggestion.dart';
 import 'package:inclusivecity_frontend/features/map/domain/usecases/search_places.dart';
 import 'package:inclusivecity_frontend/features/map/domain/usecases/get_place_detail.dart';
+import 'package:inclusivecity_frontend/features/map/domain/usecases/get_search_history.dart';
+import 'package:inclusivecity_frontend/features/map/domain/usecases/save_place_to_history.dart';
 import 'package:stream_transform/stream_transform.dart';
 
 part 'place_event.dart';
@@ -19,10 +21,14 @@ EventTransformer<E> debounceTransformer<E>(Duration duration) {
 class PlacesBloc extends Bloc<PlacesEvent, PlacesState> {
   final SearchPlaces searchPlacesUseCase;
   final GetPlaceDetails getPlaceDetailsUseCase;
+  final GetSearchHistory getSearchHistoryUseCase;
+  final SavePlaceToHistory savePlaceToHistoryUseCase;
 
   PlacesBloc({
     required this.searchPlacesUseCase,
     required this.getPlaceDetailsUseCase,
+    required this.getSearchHistoryUseCase,
+    required this.savePlaceToHistoryUseCase,
   }) : super(PlacesInitial()) {
     on<SearchPlacesEvent>(
       _onSearchPlaces,
@@ -34,12 +40,21 @@ class PlacesBloc extends Bloc<PlacesEvent, PlacesState> {
     on<GetUserLocationEvent>(_onGetUserLocation);
     
     on<SelectPlaceEvent>(_onSelectPlace);
+
+    on<LoadSearchHistoryEvent>(_onLoadSearchHistory);
+
+    on<SaveToHistoryEvent>(_onSaveToHistory);
   }
 
   Future<void> _onSearchPlaces(
       SearchPlacesEvent event, Emitter<PlacesState> emit) async {
     if (event.query.isEmpty) {
-      emit(PlacesInitial());
+      // Si la búsqueda está vacía, cargar historial en lugar de mostrar estado inicial
+      final failureOrHistory = await getSearchHistoryUseCase();
+      failureOrHistory.fold(
+        (failure) => emit(PlacesInitial()),
+        (history) => emit(SearchHistoryLoaded(history)),
+      );
       return;
     }
 
@@ -103,6 +118,15 @@ class PlacesBloc extends Bloc<PlacesEvent, PlacesState> {
 
   Future<void> _onSelectPlace(
       SelectPlaceEvent event, Emitter<PlacesState> emit) async {
+    // Guardar en el historial ANTES de obtener los detalles
+    if (state is PlacesLoaded) {
+      final suggestion = (state as PlacesLoaded)
+          .suggestions
+          .firstWhere((s) => s.placeId == event.placeId);
+      
+      add(SaveToHistoryEvent(suggestion));
+    }
+
     try {
       emit(PlaceDetailsLoading());
 
@@ -114,6 +138,30 @@ class PlacesBloc extends Bloc<PlacesEvent, PlacesState> {
       );
     } catch (e) {
       emit(PlacesError("Error al obtener detalles del lugar: ${e.toString()}"));
+    }
+  }
+
+  Future<void> _onLoadSearchHistory(
+      LoadSearchHistoryEvent event, Emitter<PlacesState> emit) async {
+    try {
+      final failureOrHistory = await getSearchHistoryUseCase();
+
+      failureOrHistory.fold(
+        (failure) => emit(PlacesError(failure.message)),
+        (history) => emit(SearchHistoryLoaded(history)),
+      );
+    } catch (e) {
+      emit(PlacesError("Error al cargar el historial: ${e.toString()}"));
+    }
+  }
+
+  Future<void> _onSaveToHistory(
+      SaveToHistoryEvent event, Emitter<PlacesState> emit) async {
+    try {
+      await savePlaceToHistoryUseCase(event.place);
+    } catch (e) {
+      // Silenciosamente fallar, no es crítico
+      print("Error al guardar en historial: ${e.toString()}");
     }
   }
 }

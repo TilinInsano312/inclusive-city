@@ -30,3 +30,12 @@ class GetNearbyPlacesEvent extends PlacesEvent {
   @override
   List<Object> get props => [latitude, longitude];
 }
+
+class LoadSearchHistoryEvent extends PlacesEvent {}
+
+class SaveToHistoryEvent extends PlacesEvent {
+  final PlaceSuggestion place;
+  SaveToHistoryEvent(this.place);
+  @override
+  List<Object> get props => [place];
+}
