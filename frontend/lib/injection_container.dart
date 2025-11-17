@@ -1,12 +1,19 @@
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
+import 'package:inclusivecity_frontend/core/network/network_info.dart';
 import 'package:inclusivecity_frontend/features/map/data/datasources/place_remote_data_source.dart';
 import 'package:inclusivecity_frontend/features/map/data/datasources/place_remote_data_source_impl.dart';
+import 'package:inclusivecity_frontend/features/map/data/datasources/place_local_data_source.dart';
 import 'package:inclusivecity_frontend/features/map/data/repositories/place_repository_impl.dart';
 import 'package:inclusivecity_frontend/features/map/domain/repositories/place_repository.dart';
 import 'package:inclusivecity_frontend/features/map/domain/usecases/get_place_detail.dart';
 import 'package:inclusivecity_frontend/features/map/domain/usecases/search_places.dart';
+import 'package:inclusivecity_frontend/features/map/domain/usecases/get_search_history.dart';
+import 'package:inclusivecity_frontend/features/map/domain/usecases/save_place_to_history.dart';
 import 'package:inclusivecity_frontend/features/map/presentation/bloc/place_bloc.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 // Service Locator
 final sl = GetIt.instance;
@@ -15,41 +22,45 @@ Future<void> init() async {
   // --- Features: Places ---
 
   // BLoC
-  // Se registra como 'factory' porque queremos una nueva instancia cada vez
-  // que se solicita, especialmente en la UI.
   sl.registerFactory(
     () => PlacesBloc(
       searchPlacesUseCase: sl<SearchPlaces>(),
-      getPlaceDetailsUseCase: sl<GetPlaceDetails>(), 
+      getPlaceDetailsUseCase: sl<GetPlaceDetails>(),
+      getSearchHistoryUseCase: sl<GetSearchHistory>(),
+      savePlaceToHistoryUseCase: sl<SavePlaceToHistory>(),
     ),
   );
 
   // Use Cases
-  // Se registra como 'lazySingleton' porque solo necesitamos una instancia
-  // y solo se crea cuando se usa por primera vez.
   sl.registerLazySingleton(() => SearchPlaces(sl<PlaceRepository>()));
   sl.registerLazySingleton(() => GetPlaceDetails(sl<PlaceRepository>()));
+  sl.registerLazySingleton(() => GetSearchHistory(sl<PlaceRepository>()));
+  sl.registerLazySingleton(() => SavePlaceToHistory(sl<PlaceRepository>()));
 
   // Repository
   sl.registerLazySingleton<PlaceRepository>(
     () => PlaceRepositoryImpl(
       remoteDataSource: sl<PlaceRemoteDataSource>(),
-      // networkInfo: sl(), // (Opcional)
+      localDataSource: sl<PlaceLocalDataSource>(),
+      networkInfo: sl<NetworkInfo>(),
     ),
   );
 
   // Data Sources
-  // Backend como fuente principal de datos
   sl.registerLazySingleton<PlaceRemoteDataSource>(
     () => BackendPlacesDataSourceImpl(client: sl<http.Client>()),
   );
 
+  sl.registerLazySingleton<PlaceLocalDataSource>(
+    () => PlaceLocalDataSourceImpl(sharedPreferences: sl<SharedPreferences>()),
+  );
+
   // --- Core ---
-  // (Opcional) Aquí registrarías tu 'NetworkInfo'
-  // sl.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(sl()));
+  sl.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(sl<InternetConnectionChecker>()));
 
   // --- Externas ---
-  // Dependencias externas como http client o shared_preferences
+  final sharedPreferences = await SharedPreferences.getInstance();
+  sl.registerLazySingleton<SharedPreferences>(() => sharedPreferences);
   sl.registerLazySingleton(() => http.Client());
-  // sl.registerLazySingleton(() => InternetConnectionChecker());
+  sl.registerLazySingleton(() => InternetConnectionChecker());
 }
