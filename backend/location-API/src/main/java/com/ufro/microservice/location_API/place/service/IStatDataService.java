@@ -1,4 +1,4 @@
-package com.ufro.microservice.location_API.spot.service;
+package com.ufro.microservice.location_API.place.service;
 
 import java.util.Map;
 

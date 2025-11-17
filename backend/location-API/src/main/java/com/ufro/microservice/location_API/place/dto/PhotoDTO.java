@@ -1,4 +1,4 @@
-package com.ufro.microservice.location_API.spot.dto;
+package com.ufro.microservice.location_API.place.dto;
 
 public class PhotoDTO {
 

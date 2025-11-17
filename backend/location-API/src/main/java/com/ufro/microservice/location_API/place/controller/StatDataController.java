@@ -1,7 +1,7 @@
-package com.ufro.microservice.location_API.spot.controller;
+package com.ufro.microservice.location_API.place.controller;
 
 import com.ufro.microservice.location_API.common.response.ApiResponse;
-import com.ufro.microservice.location_API.spot.service.IStatDataService;
+import com.ufro.microservice.location_API.place.service.IStatDataService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

@@ -1,8 +1,8 @@
-package com.ufro.microservice.location_API.spot.repository.impl;
+package com.ufro.microservice.location_API.place.repository.impl;
 
 import com.mongodb.client.result.UpdateResult;
-import com.ufro.microservice.location_API.spot.model.Place;
-import com.ufro.microservice.location_API.spot.repository.IPLaceRepositoryCustom;
+import com.ufro.microservice.location_API.place.model.Place;
+import com.ufro.microservice.location_API.place.repository.IPLaceRepositoryCustom;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;

@@ -1,8 +1,10 @@
-package com.ufro.microservice.location_API.spot.controller;
+package com.ufro.microservice.location_API.place.controller;
 
 import com.ufro.microservice.location_API.common.response.ApiResponse;
-import com.ufro.microservice.location_API.spot.dto.*;
-import com.ufro.microservice.location_API.spot.service.IPlaceService;
+import com.ufro.microservice.location_API.place.dto.PhotoDTO;
+import com.ufro.microservice.location_API.place.dto.PlaceDetailResponseDTO;
+import com.ufro.microservice.location_API.place.dto.PlaceSearchResponseDTO;
+import com.ufro.microservice.location_API.place.service.IPlaceService;
 import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;

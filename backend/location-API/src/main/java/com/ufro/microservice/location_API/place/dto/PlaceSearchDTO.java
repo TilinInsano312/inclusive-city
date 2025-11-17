@@ -1,17 +1,17 @@
-package com.ufro.microservice.location_API.spot.dto;
+package com.ufro.microservice.location_API.place.dto;
 
 import com.ufro.microservice.location_API.common.dto.LocationDTO;
 
 import java.util.List;
 
-public class PlaceDetailDTO {
+public class PlaceSearchDTO {
     private String placeId;
     private String name;
     private String address;
     private LocationDTO coordinate;
     private List<String> photos;
 
-    public PlaceDetailDTO(String placeId, String name, String address, LocationDTO coordinate, List<String> photos) {
+    public PlaceSearchDTO(String placeId, String name, String address, LocationDTO coordinate, List<String> photos) {
         this.placeId = placeId;
         this.name = name;
         this.address = address;

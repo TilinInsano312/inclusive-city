@@ -1,8 +1,8 @@
-package com.ufro.microservice.location_API.spot.service;
+package com.ufro.microservice.location_API.place.service;
 
-import com.ufro.microservice.location_API.spot.dto.AggregatedStatDTO;
-import com.ufro.microservice.location_API.spot.dto.StatCountDTO;
-import com.ufro.microservice.location_API.spot.repository.IPlaceRepository;
+import com.ufro.microservice.location_API.place.dto.AggregatedStatDTO;
+import com.ufro.microservice.location_API.place.dto.StatCountDTO;
+import com.ufro.microservice.location_API.place.repository.IPlaceRepository;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 

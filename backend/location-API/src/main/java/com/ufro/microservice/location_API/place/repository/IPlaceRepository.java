@@ -1,7 +1,7 @@
-package com.ufro.microservice.location_API.spot.repository;
+package com.ufro.microservice.location_API.place.repository;
 
-import com.ufro.microservice.location_API.spot.dto.AggregatedStatDTO;
-import com.ufro.microservice.location_API.spot.model.Place;
+import com.ufro.microservice.location_API.place.dto.AggregatedStatDTO;
+import com.ufro.microservice.location_API.place.model.Place;
 import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
 

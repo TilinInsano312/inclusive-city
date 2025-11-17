@@ -1,7 +1,7 @@
-package com.ufro.microservice.location_API.spot.mapper;
+package com.ufro.microservice.location_API.place.mapper;
 
-import com.ufro.microservice.location_API.spot.dto.PlaceDTO;
-import com.ufro.microservice.location_API.spot.model.Place;
+import com.ufro.microservice.location_API.place.dto.PlaceDTO;
+import com.ufro.microservice.location_API.place.model.Place;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")

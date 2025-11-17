@@ -1,4 +1,4 @@
-package com.ufro.microservice.location_API.spot.model;
+package com.ufro.microservice.location_API.place.model;
 
 public class Form {
     private Integer page;

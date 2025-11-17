@@ -1,20 +1,40 @@
-package com.ufro.microservice.location_API.spot.dto;
+package com.ufro.microservice.location_API.place.model;
 
-import com.ufro.microservice.location_API.spot.model.StatData;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.mongodb.core.mapping.MongoId;
 
 import java.util.List;
 
-public class PlaceDTO {
+@Document(collection = "places")
+public class Place {
+    @MongoId
+    private String id;
+    @Indexed(unique = true)
     private String placeId;
     private List<String> medals;
     private float rating;
+    @Field("statsData")
     private List<StatData> statsData;
 
-    public PlaceDTO(String placeId, List<String> medals, float rating, List<StatData> statsData) {
+    public Place(String id, String placeId, List<String> medals, float rating, List<StatData> statsData) {
+        this.id = id;
         this.placeId = placeId;
         this.medals = medals;
         this.rating = rating;
         this.statsData = statsData;
+    }
+
+    public Place() {
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getPlaceId() {

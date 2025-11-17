@@ -1,7 +1,6 @@
-package com.ufro.microservice.location_API.spot.model;
+package com.ufro.microservice.location_API.place.model;
 
-import com.ufro.microservice.location_API.spot.model.enums.ChoiceRate;
-import org.springframework.beans.factory.annotation.Value;
+import com.ufro.microservice.location_API.place.model.enums.ChoiceRate;
 
 import java.util.List;
 

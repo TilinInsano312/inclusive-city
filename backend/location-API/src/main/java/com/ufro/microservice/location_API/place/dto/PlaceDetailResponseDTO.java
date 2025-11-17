@@ -1,10 +1,10 @@
-package com.ufro.microservice.location_API.spot.dto;
+package com.ufro.microservice.location_API.place.dto;
 
 import com.ufro.microservice.location_API.common.dto.LocationDTO;
 
 import java.util.List;
 
-public class PlaceSearchResponseDTO {
+public class PlaceDetailResponseDTO {
     private String placeId;
     private String name;
     private String address;
@@ -13,7 +13,7 @@ public class PlaceSearchResponseDTO {
     private List<String> medals;
     private float rating;
 
-    public PlaceSearchResponseDTO(String placeId, String name, String address, LocationDTO coordinate, List<String> photos, List<String> medals, float rating) {
+    public PlaceDetailResponseDTO(String placeId, String name, String address, LocationDTO coordinate, List<String> photos, List<String> medals, float rating) {
         this.placeId = placeId;
         this.name = name;
         this.address = address;

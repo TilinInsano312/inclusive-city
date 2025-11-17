@@ -1,4 +1,4 @@
-package com.ufro.microservice.location_API.spot.service;
+package com.ufro.microservice.location_API.place.service;
 
 import com.google.maps.GeoApiContext;
 import com.google.maps.PhotoRequest;
@@ -7,9 +7,12 @@ import com.google.maps.PlacesApi;
 import com.google.maps.model.PlaceDetails;
 import com.google.maps.model.PlacesSearchResponse;
 import com.ufro.microservice.location_API.common.dto.LocationDTO;
-import com.ufro.microservice.location_API.spot.dto.*;
-import com.ufro.microservice.location_API.spot.mapper.IPlaceMapper;
-import com.ufro.microservice.location_API.spot.repository.IPlaceRepository;
+import com.ufro.microservice.location_API.place.dto.PhotoDTO;
+import com.ufro.microservice.location_API.place.dto.PlaceDetailDTO;
+import com.ufro.microservice.location_API.place.dto.PlaceDetailResponseDTO;
+import com.ufro.microservice.location_API.place.dto.PlaceSearchResponseDTO;
+import com.ufro.microservice.location_API.place.mapper.IPlaceMapper;
+import com.ufro.microservice.location_API.place.repository.IPlaceRepository;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 

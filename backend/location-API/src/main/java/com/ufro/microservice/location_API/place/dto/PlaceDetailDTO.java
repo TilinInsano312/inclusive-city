@@ -1,26 +1,22 @@
-package com.ufro.microservice.location_API.spot.dto;
+package com.ufro.microservice.location_API.place.dto;
 
 import com.ufro.microservice.location_API.common.dto.LocationDTO;
 
 import java.util.List;
 
-public class PlaceDetailResponseDTO {
+public class PlaceDetailDTO {
     private String placeId;
     private String name;
     private String address;
-    private LocationDTO location;
+    private LocationDTO coordinate;
     private List<String> photos;
-    private List<String> medals;
-    private float rating;
 
-    public PlaceDetailResponseDTO(String placeId, String name, String address, LocationDTO coordinate, List<String> photos, List<String> medals, float rating) {
+    public PlaceDetailDTO(String placeId, String name, String address, LocationDTO coordinate, List<String> photos) {
         this.placeId = placeId;
         this.name = name;
         this.address = address;
-        this.location = coordinate;
+        this.coordinate = coordinate;
         this.photos = photos;
-        this.medals = medals;
-        this.rating = rating;
     }
 
     public String getPlaceId() {
@@ -47,12 +43,12 @@ public class PlaceDetailResponseDTO {
         this.address = address;
     }
 
-    public LocationDTO getLocation() {
-        return location;
+    public LocationDTO getCoordinate() {
+        return coordinate;
     }
 
-    public void setLocation(LocationDTO location) {
-        this.location = location;
+    public void setCoordinate(LocationDTO coordinate) {
+        this.coordinate = coordinate;
     }
 
     public List<String> getPhotos() {
@@ -61,21 +57,5 @@ public class PlaceDetailResponseDTO {
 
     public void setPhotos(List<String> photos) {
         this.photos = photos;
-    }
-
-    public List<String> getMedals() {
-        return medals;
-    }
-
-    public void setMedals(List<String> medals) {
-        this.medals = medals;
-    }
-
-    public float getRating() {
-        return rating;
-    }
-
-    public void setRating(float rating) {
-        this.rating = rating;
     }
 }
