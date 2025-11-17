@@ -35,7 +35,7 @@ public class StorageService {
                 .build();
 
         s3Client.putObject(objectRequest, RequestBody.fromBytes(fileBytes));
-        return "https://pub-"+r2Project+".r2.dev/" + fileName;
+        return "https://pub-"+r2Project+".r2.dev/"+bucketName+"/"+ fileName;
     }
 
     public ResponseInputStream<GetObjectResponse> downloadFileAsStream(String fileName) {
