@@ -10,5 +10,9 @@ abstract class PlaceRepository {
   Future<Either<Failure, PlaceDetails>> getPlaceDetails(String placeId);
 
   Future<Either<Failure, List<PlaceDetails>>> getNearbyPlaces(double lat, double lng, {int radius = 5000});
+
+  Future<Either<Failure, List<PlaceSuggestion>>> getSearchHistory();
+
+  Future<Either<Failure, void>> savePlaceToHistory(PlaceSuggestion place);
 }
 
