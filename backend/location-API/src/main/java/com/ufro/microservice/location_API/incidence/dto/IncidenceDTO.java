@@ -9,16 +9,14 @@ public class IncidenceDTO {
     private String placeId;
     private LocationDTO locationDTO;
     private String incidence;
-    private Date date;
     private Instant expiresAt;
     private String userId;
     private String image;
 
-    public IncidenceDTO(String placeId, LocationDTO locationDTO, String incidence, Date date, Instant expiresAt, String userId, String image) {
+    public IncidenceDTO(String placeId, LocationDTO locationDTO, String incidence, Instant expiresAt, String userId, String image) {
         this.placeId = placeId;
         this.locationDTO = locationDTO;
         this.incidence = incidence;
-        this.date = date;
         this.expiresAt = expiresAt;
         this.userId = userId;
         this.image = image;
@@ -46,14 +44,6 @@ public class IncidenceDTO {
 
     public void setIncidence(String incidence) {
         this.incidence = incidence;
-    }
-
-    public Date getDate() {
-        return date;
-    }
-
-    public void setDate(Date date) {
-        this.date = date;
     }
 
     public Instant getExpiresAt() {

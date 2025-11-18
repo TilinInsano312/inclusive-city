@@ -16,18 +16,16 @@ public class Incidence {
     private String placeId;
     private Location location;
     private String incidence;
-    private Date date;
     @Indexed(expireAfter = "0s")
     private Instant expiresAt;
     private String userId;
     private String image;
 
-    public Incidence(String id, String placeId, Location location, String incidence, Date date, Instant expiresAt, String userId, String image) {
+    public Incidence(String id, String placeId, Location location, String incidence, Instant expiresAt, String userId, String image) {
         this.id = id;
         this.placeId = placeId;
         this.location = location;
         this.incidence = incidence;
-        this.date = date;
         this.expiresAt = expiresAt;
         this.userId = userId;
         this.image = image;
@@ -63,14 +61,6 @@ public class Incidence {
 
     public void setIncidence(String incidence) {
         this.incidence = incidence;
-    }
-
-    public Date getDate() {
-        return date;
-    }
-
-    public void setDate(Date date) {
-        this.date = date;
     }
 
     public Instant getExpiresAt() {
