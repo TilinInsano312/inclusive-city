@@ -8,14 +8,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("inclusive/api/v1")
+@RequestMapping("inclusive/api/v1/incidence")
 public class IncidenceController {
     private final IncidenceService incidenceService;
     public IncidenceController(IncidenceService incidenceService) {
         this.incidenceService = incidenceService;
     }
 
-    @PostMapping("/incidence" )
+    @PostMapping("/insert" )
     public ResponseEntity<IncidenceDTO> insertAIncidence(@RequestBody IncidenceDTO incidenceDTO) {
         if (incidenceDTO == null) {
             return ResponseEntity.badRequest().build();
@@ -23,7 +23,7 @@ public class IncidenceController {
         return ResponseEntity.ok(incidenceService.insertAIncidence(incidenceDTO));
     }
 
-    @GetMapping("/incidence/all" )
+    @GetMapping("/all" )
     public ResponseEntity<List<IncidenceDTO>> getAllIncidences() {
         return ResponseEntity.ok(incidenceService.getAllIncidences());
     }
