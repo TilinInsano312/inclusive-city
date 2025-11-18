@@ -16,7 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("inclusive/api/v1/images")
+@RequestMapping("inclusive/api/v1/incidence/image")
 public class ImageUploadController {
 
 //    private final SafeSearchService safeSearchService;

@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 //Controlador para gestionar las operaciones relacionadas con los places (lugares/establecimientos)
-@RequestMapping("inclusive/api/v1/locations/place/")
+@RequestMapping("inclusive/api/v1/location/place/")
 @RestController
 public class PlaceController {
     private final IPlaceService placeService;

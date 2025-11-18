@@ -17,7 +17,7 @@ public class StatDataController {
     }
 
     //Conectar con @AuthenticatedPrincipal para obtener el userId del usuario logeado
-    @PatchMapping("statdata/update" )
+    @PatchMapping("update" )
     public ResponseEntity<ApiResponse<Boolean>> updateStatDataRateChoice(String placeId, String userId, String newRate) {
         return ResponseEntity.ok().body(
                 new ApiResponse<>(
