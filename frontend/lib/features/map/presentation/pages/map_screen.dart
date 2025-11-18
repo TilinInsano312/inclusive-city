@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:google_maps_webservice/places.dart' as places_api;
 import 'package:inclusivecity_frontend/constants/app_colors.dart';
 import 'package:inclusivecity_frontend/features/map/presentation/bloc/place_bloc.dart';
 import 'package:inclusivecity_frontend/features/map/presentation/widget/search_bottom_sheet.dart';
@@ -22,10 +23,13 @@ class _MapPageState extends State<MapPage> {
   final Set<Marker> _markers = {};
   PlaceDetails? _selectedPlaceDetails;
   bool _showDetailsSheet = false;
+  late places_api.GoogleMapsPlaces _placesApi;
 
   @override
   void initState() {
     super.initState();
+    // Inicializar la API de Google Places con la misma API Key
+    _placesApi = places_api.GoogleMapsPlaces(apiKey: 'AIzaSyBzEsyWdfmzVtrUCrNOob2mbEDizVRkiZw');
     // Disparar el evento para obtener la ubicación del usuario al iniciar
     context.read<PlacesBloc>().add(GetUserLocationEvent());
   }
@@ -35,6 +39,155 @@ class _MapPageState extends State<MapPage> {
     _mapController?.dispose();
     _sheetSizeNotifier.dispose();
     super.dispose();
+  }
+
+  // Ajusta la cámara para mostrar todos los marcadores
+  void _fitMarkersInView() {
+    if (_markers.isEmpty || _mapController == null) return;
+    
+    if (_markers.length == 1) {
+      // Si solo hay un marcador, centrar en él
+      final marker = _markers.first;
+      _mapController!.animateCamera(
+        CameraUpdate.newLatLngZoom(marker.position, 17.0),
+      );
+    } else {
+      // Si hay múltiples marcadores, calcular bounds
+      double minLat = _markers.first.position.latitude;
+      double maxLat = _markers.first.position.latitude;
+      double minLng = _markers.first.position.longitude;
+      double maxLng = _markers.first.position.longitude;
+
+      for (var marker in _markers) {
+        if (marker.position.latitude < minLat) minLat = marker.position.latitude;
+        if (marker.position.latitude > maxLat) maxLat = marker.position.latitude;
+        if (marker.position.longitude < minLng) minLng = marker.position.longitude;
+        if (marker.position.longitude > maxLng) maxLng = marker.position.longitude;
+      }
+
+      final bounds = LatLngBounds(
+        southwest: LatLng(minLat, minLng),
+        northeast: LatLng(maxLat, maxLng),
+      );
+
+      _mapController!.animateCamera(
+        CameraUpdate.newLatLngBounds(bounds, 50.0), // 50 px de padding
+      );
+    }
+  }
+
+  // Buscar POIs cercanos a una posición específica
+  Future<void> _findNearbyPOI(LatLng position) async {
+    try {
+      // Buscar lugares en un radio de 50 metros alrededor del tap
+      final response = await _placesApi.searchNearbyWithRadius(
+        places_api.Location(lat: position.latitude, lng: position.longitude),
+        50, // Radio de 50 metros
+        // Buscar solo tipos de establecimientos (excluir direcciones, calles, etc.)
+      );
+
+      if (!mounted) return; // Verificar que el widget sigue montado
+
+      if (response.isOkay && response.results.isNotEmpty) {
+        // Filtrar solo lugares que sean establecimientos/instituciones
+        // Excluir: rutas, direcciones, áreas geográficas, etc.
+        final establishments = response.results.where((place) {
+          // Verificar que tenga un nombre (los POIs siempre tienen nombre)
+          if (place.name.isEmpty) return false;
+          
+          // Verificar que tenga tipos de establecimiento
+          final types = place.types;
+          
+          // Excluir tipos que NO son establecimientos
+          final excludedTypes = [
+            'route', 'street_address', 'premise', 'subpremise',
+            'neighborhood', 'locality', 'administrative_area_level_1',
+            'administrative_area_level_2', 'administrative_area_level_3',
+            'country', 'political', 'postal_code', 'intersection',
+          ];
+          
+          // Si contiene algún tipo excluido, no es un establecimiento
+          if (types.any((type) => excludedTypes.contains(type))) {
+            return false;
+          }
+          
+          // Incluir solo si tiene tipos de establecimiento válidos
+          final validTypes = [
+            'establishment', 'point_of_interest', 'store', 'restaurant',
+            'cafe', 'bar', 'food', 'shopping_mall', 'park', 'museum',
+            'school', 'university', 'hospital', 'pharmacy', 'bank',
+            'atm', 'gym', 'library', 'church', 'mosque', 'synagogue',
+            'hindu_temple', 'movie_theater', 'stadium', 'zoo',
+            'amusement_park', 'aquarium', 'art_gallery', 'beauty_salon',
+            'book_store', 'bowling_alley', 'bus_station', 'campground',
+            'car_dealer', 'car_rental', 'car_repair', 'car_wash',
+            'casino', 'cemetery', 'city_hall', 'clothing_store',
+            'convenience_store', 'courthouse', 'dentist', 'department_store',
+            'doctor', 'drugstore', 'electrician', 'electronics_store',
+            'embassy', 'fire_station', 'florist', 'funeral_home',
+            'furniture_store', 'gas_station', 'grocery_or_supermarket',
+            'hair_care', 'hardware_store', 'home_goods_store',
+            'insurance_agency', 'jewelry_store', 'laundry', 'lawyer',
+            'liquor_store', 'local_government_office', 'locksmith',
+            'lodging', 'meal_delivery', 'meal_takeaway', 'night_club',
+            'painter', 'parking', 'pet_store', 'physiotherapist',
+            'plumber', 'police', 'post_office', 'primary_school',
+            'real_estate_agency', 'roofing_contractor', 'rv_park',
+            'secondary_school', 'shoe_store', 'spa', 'storage',
+            'subway_station', 'supermarket', 'taxi_stand', 'tourist_attraction',
+            'train_station', 'transit_station', 'travel_agency',
+            'veterinary_care',
+          ];
+          
+          // Es un establecimiento si tiene al menos un tipo válido
+          return types.any((type) => validTypes.contains(type));
+        }).toList();
+        
+        if (establishments.isEmpty) {
+          // No hay establecimientos cercanos, cerrar el sheet si está abierto
+          if (_showDetailsSheet) {
+            setState(() {
+              _showDetailsSheet = false;
+              _selectedPlaceDetails = null;
+              _markers.clear();
+            });
+            context.read<PlacesBloc>().add(LoadSearchHistoryEvent());
+          }
+          return;
+        }
+        
+        // Tomar el establecimiento más cercano
+        final nearestPlace = establishments.first;
+        
+        // Obtener los detalles del lugar usando nuestro backend
+        debugPrint('POI (establecimiento) encontrado: ${nearestPlace.name} - ${nearestPlace.placeId}');
+        context.read<PlacesBloc>().add(SelectPlaceEvent(nearestPlace.placeId));
+      } else {
+        // No hay POI cercano, cerrar el sheet si está abierto
+        if (_showDetailsSheet) {
+          setState(() {
+            _showDetailsSheet = false;
+            _selectedPlaceDetails = null;
+            _markers.clear();
+          });
+          context.read<PlacesBloc>().add(LoadSearchHistoryEvent());
+        }
+      }
+    } catch (e) {
+      debugPrint('Error al buscar POI cercano: $e');
+      
+      if (!mounted) return; // Verificar que el widget sigue montado
+      
+      // Si hay error, comportamiento normal de cerrar sheet
+      if (_showDetailsSheet) {
+        setState(() {
+          _showDetailsSheet = false;
+          _selectedPlaceDetails = null;
+          _markers.clear();
+        });
+        context.read<PlacesBloc>().add(LoadSearchHistoryEvent());
+      }
+    }
   }
 
   // Posición inicial del mapa
@@ -55,6 +208,35 @@ class _MapPageState extends State<MapPage> {
               16.0,
             ),
           );
+        } else if (state is PlacesLoaded && state.suggestions.isNotEmpty) {
+          // Cuando hay resultados de búsqueda, agregar marcadores en el mapa
+          setState(() {
+            _markers.clear();
+            for (var suggestion in state.suggestions) {
+              if (suggestion.latitude != null && suggestion.longitude != null) {
+                _markers.add(
+                  Marker(
+                    markerId: MarkerId(suggestion.placeId),
+                    position: LatLng(suggestion.latitude!, suggestion.longitude!),
+                    infoWindow: InfoWindow(
+                      title: suggestion.description,
+                      snippet: suggestion.address ?? '',
+                    ),
+                    icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
+                    onTap: () {
+                      // Cuando se toca un marcador de búsqueda, obtener detalles completos
+                      context.read<PlacesBloc>().add(SelectPlaceEvent(suggestion.placeId));
+                    },
+                  ),
+                );
+              }
+            }
+            
+            // Si hay marcadores, ajustar la cámara para mostrarlos todos
+            if (_markers.isNotEmpty) {
+              _fitMarkersInView();
+            }
+          });
         } else if (state is PlaceDetailsLoaded) {
           // Mover la cámara al lugar seleccionado y agregar marcador
           final placeDetails = state.placeDetails;
@@ -76,6 +258,13 @@ class _MapPageState extends State<MapPage> {
                   snippet: placeDetails.address,
                 ),
                 icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+                onTap: () {
+                  // Cuando se toca el marcador, mostrar los detalles nuevamente
+                  setState(() {
+                    _selectedPlaceDetails = placeDetails;
+                    _showDetailsSheet = true;
+                  });
+                },
               ),
             );
             
@@ -106,6 +295,10 @@ class _MapPageState extends State<MapPage> {
               myLocationButtonEnabled: false,
               myLocationEnabled: true,
               zoomControlsEnabled: false,
+              onTap: (LatLng position) async {
+                // Buscar POIs cercanos a donde se hizo tap
+                await _findNearbyPOI(position);
+              },
             ),
 
             // Bottom sheet de búsqueda (solo cuando no hay detalles)
