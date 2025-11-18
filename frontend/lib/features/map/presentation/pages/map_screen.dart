@@ -20,16 +20,23 @@ class _MapPageState extends State<MapPage> {
   final Set<Marker> _markers = {};
 
   @override
+  void initState() {
+    super.initState();
+    // Disparar el evento para obtener la ubicación del usuario al iniciar
+    context.read<PlacesBloc>().add(GetUserLocationEvent());
+  }
+
+  @override
   void dispose() {
     _mapController?.dispose();
     _sheetSizeNotifier.dispose();
     super.dispose();
   }
 
-  // Posición inicial del mapa (ej. Temuco, Chile)
+  // Posición inicial del mapa
   static const CameraPosition _initialPosition = CameraPosition(
-    target: LatLng(-38.7396, -72.5980), // TODO: Cambiar a la ubicación real del usuario
-    zoom: 14.0,
+    target: LatLng(0, 0), // Se actualizará a la ubicación del usuario
+    zoom: 2.0,
   );
 
   @override
