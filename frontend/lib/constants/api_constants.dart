@@ -2,7 +2,7 @@ class ApiConstants {
   // Base URLs
   // Usar 10.0.2.2 para emulador Android (localhost de la máquina host)
   // Para dispositivo físico, usa la IP de tu PC (ej: 192.168.1.100)
-  static const String gatewayUrl = "http://192.168.1.6:8080";
+  static const String gatewayUrl = "http://172.27.234.90:8080";
   static const String baseApiPath = "/inclusive/api/v1";
   static const String baseUrl = "$gatewayUrl$baseApiPath";
 

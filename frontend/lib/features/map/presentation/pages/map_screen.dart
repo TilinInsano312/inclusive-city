@@ -4,6 +4,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:inclusivecity_frontend/constants/app_colors.dart';
 import 'package:inclusivecity_frontend/features/map/presentation/bloc/place_bloc.dart';
 import 'package:inclusivecity_frontend/features/map/presentation/widget/search_bottom_sheet.dart';
+import 'package:inclusivecity_frontend/features/map/presentation/widget/place_details_bottom_sheet.dart';
+import 'package:inclusivecity_frontend/features/map/domain/entities/place_details.dart';
 
 
 
@@ -18,6 +20,8 @@ class _MapPageState extends State<MapPage> {
   GoogleMapController? _mapController;
   final ValueNotifier<double> _sheetSizeNotifier = ValueNotifier<double>(0.15);
   final Set<Marker> _markers = {};
+  PlaceDetails? _selectedPlaceDetails;
+  bool _showDetailsSheet = false;
 
   @override
   void initState() {
@@ -74,6 +78,10 @@ class _MapPageState extends State<MapPage> {
                 icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
               ),
             );
+            
+            // Mostrar el bottom sheet de detalles
+            _selectedPlaceDetails = placeDetails;
+            _showDetailsSheet = true;
           });
         } else if (state is PlacesError) {
           // Mostrar mensaje de error
@@ -100,13 +108,30 @@ class _MapPageState extends State<MapPage> {
               zoomControlsEnabled: false,
             ),
 
-            SearchBottomSheet(sheetSizeNotifier: _sheetSizeNotifier),
+            // Bottom sheet de búsqueda (solo cuando no hay detalles)
+            if (!_showDetailsSheet)
+              SearchBottomSheet(sheetSizeNotifier: _sheetSizeNotifier),
+            
+            // Bottom sheet de detalles del lugar
+            if (_showDetailsSheet && _selectedPlaceDetails != null)
+              PlaceDetailsBottomSheet(
+                placeDetails: _selectedPlaceDetails!,
+                onClose: () {
+                  setState(() {
+                    _showDetailsSheet = false;
+                    _selectedPlaceDetails = null;
+                    _markers.clear();
+                  });
+                  // Recargar el historial de búsqueda
+                  context.read<PlacesBloc>().add(LoadSearchHistoryEvent());
+                },
+              ),
 
             ValueListenableBuilder<double>(
               valueListenable: _sheetSizeNotifier,
               builder: (context, sheetSize, child) {
-                // Oculta el botón cuando el sheet es mayor al 30%
-                final shouldShow = sheetSize < 0.3;
+                // Oculta el botón cuando el sheet es mayor al 30% o cuando se muestra el sheet de detalles
+                final shouldShow = sheetSize < 0.3 && !_showDetailsSheet;
                 return AnimatedPositioned(
                   duration: const Duration(milliseconds: 200),
                   top: shouldShow ? 50.0 : -100.0, // Mueve fuera de pantalla
