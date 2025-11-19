@@ -1,5 +1,4 @@
 package com.ufro.microservice.location_API.spot.mapper;
-
 import com.ufro.microservice.location_API.spot.dto.SpotDTO;
 import com.ufro.microservice.location_API.spot.model.Spot;
 import org.mapstruct.Mapper;
