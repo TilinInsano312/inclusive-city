@@ -1,6 +1,6 @@
 package com.ufro.microservice.location_API.incidence.controller;
 
-//import com.ufro.microservice.location_API.incidence.service.SafeSearchService;
+import com.ufro.microservice.location_API.incidence.service.impl.SafeSearchService;
 import com.ufro.microservice.location_API.common.response.ApiResponse;
 import com.ufro.microservice.location_API.incidence.service.impl.ImageConversionService;
 import com.ufro.microservice.location_API.incidence.service.impl.StorageService;
@@ -19,18 +19,12 @@ import java.util.UUID;
 @RequestMapping("inclusive/api/v1/incidence/image")
 public class ImageUploadController {
 
-//    private final SafeSearchService safeSearchService;
+    private final SafeSearchService safeSearchService;
     private final StorageService storageService;
     private final ImageConversionService imageConversionService;
 
-//    public ImageUploadController(SafeSearchService safeSearchService,
-//                                 StorageService storageService) {
-//        this.safeSearchService = safeSearchService;
-//        this.storageService = storageService;
-//    }
-
-
-    public ImageUploadController(StorageService storageService, ImageConversionService imageConversionService) {
+    public ImageUploadController(SafeSearchService safeSearchService, StorageService storageService, ImageConversionService imageConversionService) {
+        this.safeSearchService = safeSearchService;
         this.storageService = storageService;
         this.imageConversionService = imageConversionService;
     }
@@ -43,14 +37,12 @@ public class ImageUploadController {
         try {
             byte[] imageBytes = file.getBytes();
 
-//            if (!safeSearchService.isImageSafe(imageBytes)) {
-//                // Si no es segura, la rechazamos
-//                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-//                        .body("La imagen contiene contenido inapropiado.");
-//            }
-            // --- Paso 2: "Comprimir" (Convertir a JPEG de calidad 80%) ---
-            byte[] compressedImageBytes = imageConversionService.compressToJpeg(imageBytes, 0.8f);
+            if (!safeSearchService.processImage(imageBytes)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ApiResponse <> ("La imagen contiene contenido inapropiado y no puede ser subida."));
+            }
 
+            byte[] compressedImageBytes = imageConversionService.compressToJpeg(imageBytes, 0.8f);
             String finalFileName = UUID.randomUUID().toString() + ".jpg";
 
             return ResponseEntity.ok(new ApiResponse<>(storageService.uploadFile(finalFileName, compressedImageBytes)) );

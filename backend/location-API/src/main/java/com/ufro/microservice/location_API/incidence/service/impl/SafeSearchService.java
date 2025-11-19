@@ -1,27 +1,24 @@
-//package com.ufro.microservice.location_API.incidence.service;
-//
-//import com.google.cloud.vision.v1.*;
-//import com.google.protobuf.ByteString;
-//import org.springframework.stereotype.Service;
-//
-//import java.io.IOException;
-//import java.util.List;
-//
-//@Service
-//public class SafeSearchService {
-//
-//    // ImageAnnotatorClient se crea automáticamente gracias al starter de Spring
-//    private final ImageAnnotatorClient imageAnnotatorClient;
-//
-//    public SafeSearchService(ImageAnnotatorClient imageAnnotatorClient) {
-//        this.imageAnnotatorClient = imageAnnotatorClient;
-//    }
-//
-//    /**
-//     * Verifica si una imagen es segura según Google SafeSearch.
-//     * @return true si la imagen es segura, false si contiene contenido explícito.
-//     */
-//    public boolean isImageSafe(byte[] imageBytes) throws IOException {
+package com.ufro.microservice.location_API.incidence.service.impl;
+
+import com.google.cloud.vision.v1.AnnotateImageResponse;
+import com.google.cloud.vision.v1.Feature;
+import com.google.cloud.vision.v1.Likelihood;
+import com.google.cloud.vision.v1.SafeSearchAnnotation;
+import org.springframework.cloud.gcp.vision.CloudVisionTemplate;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.stereotype.Service;
+
+
+@Service
+public class SafeSearchService {
+
+    private final CloudVisionTemplate cloudVisionTemplate;
+
+    public SafeSearchService(CloudVisionTemplate cloudVisionTemplate) {
+        this.cloudVisionTemplate = cloudVisionTemplate;
+    }
+    //    public boolean isImageSafe(byte[] imageBytes) throws IOException {
 //        Image img = Image.newBuilder().setContent(ByteString.copyFrom(imageBytes)).build();
 //        Feature feature = Feature.newBuilder().setType(Feature.Type.SAFE_SEARCH_DETECTION).build();
 //        AnnotateImageRequest request = AnnotateImageRequest.newBuilder()
@@ -54,4 +51,30 @@
 //                safeSearch.getRacy() != Likelihood.LIKELY &&
 //                safeSearch.getRacy() != Likelihood.VERY_LIKELY;
 //    }
-//}
+
+    public boolean processImage(byte[] imageBytes) {
+        Resource imageResource = new ByteArrayResource(imageBytes);
+        AnnotateImageResponse response = this.cloudVisionTemplate.analyzeImage(
+                imageResource, Feature.Type.LABEL_DETECTION);
+        return isSafe(response.getSafeSearchAnnotation());
+    }
+
+    private boolean isSafe(SafeSearchAnnotation safeSearch) {
+        // Verificamos las 5 categorías principales
+        return !isLikely(safeSearch.getAdult()) &&
+                !isLikely(safeSearch.getViolence()) &&
+                !isLikely(safeSearch.getRacy()) &&
+                !isLikely(safeSearch.getMedical()) &&
+                !isLikely(safeSearch.getSpoof());
+    }
+
+    /**
+     * Define qué nivel de probabilidad consideras "inseguro".
+     * Generalmente, POSSIBLE, LIKELY y VERY_LIKELY se rechazan.
+     */
+    private boolean isLikely(Likelihood likelihood) {
+        return likelihood == Likelihood.POSSIBLE ||
+                likelihood == Likelihood.LIKELY ||
+                likelihood == Likelihood.VERY_LIKELY;
+    }
+}
