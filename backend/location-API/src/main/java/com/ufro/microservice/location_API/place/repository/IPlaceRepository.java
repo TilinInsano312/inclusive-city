@@ -5,6 +5,7 @@ import com.ufro.microservice.location_API.place.model.Place;
 import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface IPlaceRepository extends MongoRepository<Place, String>, IPLaceRepositoryCustom {
@@ -33,6 +34,8 @@ public interface IPlaceRepository extends MongoRepository<Place, String>, IPLace
                     "} }"
     })
     AggregatedStatDTO getAggregatedStats(String placeId);
+
+    Place findPlaceByPlaceId(String placeId);
 
 
 }

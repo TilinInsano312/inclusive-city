@@ -1,7 +1,7 @@
 package com.ufro.microservice.location_API.place.service;
 
-import com.ufro.microservice.location_API.place.dto.AggregatedStatDTO;
-import com.ufro.microservice.location_API.place.dto.StatCountDTO;
+import com.ufro.microservice.location_API.place.dto.*;
+import com.ufro.microservice.location_API.place.mapper.IPlaceMapper;
 import com.ufro.microservice.location_API.place.repository.IPlaceRepository;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -12,10 +12,12 @@ import java.util.Map;
 @Service
 public class StatDataService implements IStatDataService {
     private final IPlaceRepository placeRepository;
+    private final IPlaceMapper placeMapper;
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(StatDataService.class);
 
-    public StatDataService(IPlaceRepository placeRepository) {
+    public StatDataService(IPlaceRepository placeRepository, IPlaceMapper placeMapper) {
         this.placeRepository = placeRepository;
+        this.placeMapper = placeMapper;
     }
 
     //Estadisticas de rating
@@ -60,5 +62,9 @@ public class StatDataService implements IStatDataService {
     @Override
     public void calculateFormStatistics(String placeId) {
 
+    }
+
+    public StatDataDTO addFormToStatData(StatDataDTO statDataDTO, String placeId) {
+        return null;
     }
 }

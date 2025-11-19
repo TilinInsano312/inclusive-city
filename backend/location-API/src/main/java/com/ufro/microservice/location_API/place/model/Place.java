@@ -68,4 +68,7 @@ public class Place {
     public void setStatsData(List<StatData> statsData) {
         this.statsData = statsData;
     }
+    public void setStatsData(StatData statData) {
+        statsData.add(statData);
+    }
 }

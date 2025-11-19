@@ -42,4 +42,8 @@ public class StatData {
     public void setForms(List<Form> forms) {
         this.forms = forms;
     }
+
+    public void setForms(Form form) {
+        forms.add(form);
+    }
 }

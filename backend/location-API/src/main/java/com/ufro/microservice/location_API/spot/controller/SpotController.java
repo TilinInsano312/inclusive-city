@@ -61,7 +61,7 @@ public class SpotController {
     }
     @PostMapping("custom-spot/save-spot/{listName}" )
     public ResponseEntity<ApiResponse<SaveCustomSpotDTO>> saveASpotInACustomSpot(@RequestBody @Valid SpotDTO spotDTO, @PathVariable("listName") String listName) {
-        return ResponseEntity.ok().body(
+        return ResponseEntity.status(HttpStatus.CREATED).body(
                 new ApiResponse<>(
                         this.spotService.saveASpotInACustomSpot(spotDTO, listName)
                 )
