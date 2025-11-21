@@ -8,9 +8,9 @@ public class StatData {
     private String userId;
     //Valor por defecto ChoiceRate.NA
     private String rateChoice= ChoiceRate.NA.name();
-    private List<Form> forms;
+    private List<String> forms;
 
-    public StatData(String userId, String rateChoice, List<Form> forms) {
+    public StatData(String userId, String rateChoice, List<String> forms) {
         this.userId = userId;
         this.rateChoice = rateChoice;
         this.forms = forms;
@@ -35,15 +35,11 @@ public class StatData {
         this.rateChoice = rateChoice;
     }
 
-    public List<Form> getForms() {
+    public List<String> getForms() {
         return forms;
     }
 
-    public void setForms(List<Form> forms) {
+    public void setForms(List<String> forms) {
         this.forms = forms;
-    }
-
-    public void setForms(Form form) {
-        forms.add(form);
     }
 }

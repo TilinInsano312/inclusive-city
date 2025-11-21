@@ -1,6 +1,5 @@
 package com.ufro.microservice.location_API.place.dto;
 
-import com.ufro.microservice.location_API.place.model.Form;
 import com.ufro.microservice.location_API.place.model.enums.ChoiceRate;
 
 import java.util.List;
@@ -10,9 +9,9 @@ public class StatDataDTO {
     private String userId;
     //Valor por defecto ChoiceRate.NA
     private String rateChoice= ChoiceRate.NA.name();
-    private List<Form> forms;
+    private List<String> forms;
 
-    public StatDataDTO(String userId, String rateChoice, List<Form> forms) {
+    public StatDataDTO(String userId, String rateChoice, List<String> forms) {
         this.userId = userId;
         this.rateChoice = rateChoice;
         this.forms = forms;
@@ -34,11 +33,11 @@ public class StatDataDTO {
         this.rateChoice = rateChoice;
     }
 
-    public List<Form> getForms() {
+    public List<String> getForms() {
         return forms;
     }
 
-    public void setForms(List<Form> forms) {
+    public void setForms(List<String> forms) {
         this.forms = forms;
     }
 }
