@@ -37,7 +37,7 @@ public class StatDataService implements IStatDataService {
         Map<Integer, Integer> formsData = new HashMap<>();
         for (Map.Entry<String, StatDataDTO> entry : placeDTO.getStatsData().entrySet()) {
             StatDataDTO statDataDTO = entry.getValue();
-            if (statDataDTO.getRateChoice() == "LIKE") {
+            if (statDataDTO.getRateChoice().equals("LIKE")) {
                 likeCount ++;
             }
             for (int i = 0; i <6; i++) {
@@ -64,6 +64,7 @@ public class StatDataService implements IStatDataService {
                     case 3 -> formStatistics.add(Medals.BANOS.name());
                     case 4 -> formStatistics.add(Medals.ESTACIONAMIENTO.name());
                     case 5  -> formStatistics.add(Medals.FACIL_CIRCULACION.name());
+                    default -> formStatistics.add("NO_MEDAL");
                 }
             }
             }
@@ -73,10 +74,24 @@ public class StatDataService implements IStatDataService {
 
     @Override
     public long addStatDataToPlace(StatDataDTO statDataDTO, String placeId, String userId) {
-        log.info("Adding stat data to place with ID: " + placeId + " for user: " + userId);
-        PlaceDTO placeDTO = placeMapper.toPlaceDTO(placeRepository.findByPlaceId(placeId).orElseThrow());
-        placeDTO.getStatsData().put(userId, statDataDTO);
-        log.info("Updated stats data for place: " + placeDTO.getStatsData());
-        return placeRepository.updateByPlaceId(placeId, statDataMapper.toStatData(statDataDTO));
+        if(placeRepository.existsPlaceByPlaceId(placeId)){
+            log.info("Adding stat data to place with ID: " + placeId + " for user: " + userId);
+            PlaceDTO placeDTO = placeMapper.toPlaceDTO(placeRepository.findByPlaceId(placeId).orElseThrow());
+            placeDTO.getStatsData().put(userId, statDataDTO);
+            log.info("Updated stats data for place: " + placeDTO.getStatsData());
+            return placeRepository.updateByPlaceId(placeId, statDataMapper.toStatData(statDataDTO));
+        }
+        else {
+            log.warn("Place with ID: " + placeId + " does not exist. Cannot add stat data.");
+            placeMapper.toPlaceDTO(placeRepository.save(
+                    placeMapper.toPlace(new PlaceDTO(
+                            placeId,
+                            List.of(),
+                            0.0f,
+                            Map.of(userId, statDataDTO)))));
+            log.info("Created new place with ID: " + placeId + " and initial stat data for user: " + userId);
+            return 0;
+        }
+
     }
 }
