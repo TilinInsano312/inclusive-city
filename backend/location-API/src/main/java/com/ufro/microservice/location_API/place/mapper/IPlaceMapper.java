@@ -9,13 +9,6 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface IPlaceMapper {
     PlaceDTO toPlaceDTO(Place place);
-    default Place toPlace(PlaceDTO dto) {
-        Place place = new Place();
-        place.setPlaceId(dto.getPlaceId());
-        place.setMedals(dto.getMedals());
-        place.setRating(dto.getRating());
-        place.setStatsData(dto.getStatsData());  // Asegúrate de que esto exista
-        return place;
-    }
+    Place toPlace(PlaceDTO placeDTO);
     List<PlaceDTO> toPlaceDTOs(List<Place> places);
 }
