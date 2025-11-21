@@ -1,11 +1,10 @@
 package com.ufro.microservice.location_API.place.controller;
 
 import com.ufro.microservice.location_API.common.response.ApiResponse;
+import com.ufro.microservice.location_API.place.dto.StatDataDTO;
 import com.ufro.microservice.location_API.place.service.IStatDataService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RequestMapping("inclusive/api/v1/locations/place/statdata/")
 @RestController
@@ -17,11 +16,19 @@ public class StatDataController {
     }
 
     //Conectar con @AuthenticatedPrincipal para obtener el userId del usuario logeado
-    @PatchMapping("update" )
-    public ResponseEntity<ApiResponse<Boolean>> updateStatDataRateChoice(String placeId, String userId, String newRate) {
+    @GetMapping("update/{placeId}" )
+    public ResponseEntity<ApiResponse<Long>> updateStatDataRateChoice(@PathVariable String placeId) {
         return ResponseEntity.ok().body(
                 new ApiResponse<>(
-                        statDataService.updateStatDataRateChoice(placeId, userId, newRate)
+                        statDataService.updateReview(statDataService.calculateStatData(placeId), placeId)
+                )
+        );
+    }
+    @PostMapping("save/{placeId}" )
+    public ResponseEntity<ApiResponse<Long>> saveStatDataForms(StatDataDTO statDataDTO, @PathVariable String placeId) {
+        return ResponseEntity.ok().body(
+                new ApiResponse<>(
+                        statDataService.addStatDataToPlace(statDataDTO, placeId, "userId")
                 )
         );
     }
