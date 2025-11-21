@@ -12,6 +12,8 @@ import com.ufro.microservice.location_API.place.dto.PlaceDetailDTO;
 import com.ufro.microservice.location_API.place.dto.PlaceDetailResponseDTO;
 import com.ufro.microservice.location_API.place.dto.PlaceSearchResponseDTO;
 import com.ufro.microservice.location_API.place.mapper.IPlaceMapper;
+import com.ufro.microservice.location_API.place.model.Place;
+import com.ufro.microservice.location_API.place.model.StatData;
 import com.ufro.microservice.location_API.place.repository.IPlaceRepository;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;

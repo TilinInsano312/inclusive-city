@@ -5,7 +5,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Document(collection = "places")
 public class Place {
@@ -16,9 +18,9 @@ public class Place {
     private List<String> medals;
     private float rating;
     @Field("statsData")
-    private List<StatData> statsData;
+    private Map<String,StatData> statsData;
 
-    public Place(String id, String placeId, List<String> medals, float rating, List<StatData> statsData) {
+    public Place(String id, String placeId, List<String> medals, float rating, Map<String,StatData> statsData) {
         this.id = id;
         this.placeId = placeId;
         this.medals = medals;
@@ -61,14 +63,11 @@ public class Place {
         this.rating = rating;
     }
 
-    public List<StatData> getStatsData() {
+    public Map<String, StatData> getStatsData() {
         return statsData;
     }
 
-    public void setStatsData(List<StatData> statsData) {
+    public void setStatsData(Map<String, StatData> statsData) {
         this.statsData = statsData;
-    }
-    public void setStatsData(StatData statData) {
-        statsData.add(statData);
     }
 }

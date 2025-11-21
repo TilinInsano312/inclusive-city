@@ -2,15 +2,17 @@ package com.ufro.microservice.location_API.place.dto;
 
 import com.ufro.microservice.location_API.place.model.StatData;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class PlaceDTO {
     private String placeId;
     private List<String> medals;
     private float rating;
-    private List<StatData> statsData;
+    private Map<String,StatDataDTO> statsData;
 
-    public PlaceDTO(String placeId, List<String> medals, float rating, List<StatData> statsData) {
+    public PlaceDTO(String placeId, List<String> medals, float rating, Map<String, StatDataDTO> statsData) {
         this.placeId = placeId;
         this.medals = medals;
         this.rating = rating;
@@ -41,11 +43,11 @@ public class PlaceDTO {
         this.rating = rating;
     }
 
-    public List<StatData> getStatsData() {
+    public Map<String, StatDataDTO> getStatsData() {
         return statsData;
     }
 
-    public void setStatsData(List<StatData> statsData) {
+    public void setStatsData(Map<String, StatDataDTO> statsData) {
         this.statsData = statsData;
     }
 }
