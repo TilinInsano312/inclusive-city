@@ -1,4 +1,4 @@
-package com.ufro.gateway_service;
+package com.gateway.gateway_service;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
