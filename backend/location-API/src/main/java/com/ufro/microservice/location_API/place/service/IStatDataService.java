@@ -1,11 +1,12 @@
 package com.ufro.microservice.location_API.place.service;
 
+import com.ufro.microservice.location_API.place.dto.StatDataDTO;
+import com.ufro.microservice.location_API.place.dto.StatDataResultDTO;
+
 import java.util.Map;
 
 public interface IStatDataService {
-    boolean updateStatDataRateChoice(String placeId, String userId, String newRate);
-    Map<String, Integer> getRating(String placeId);
-    void setForm(String formChoices);
-    float calculateAverageRate(String placeId);
-    void calculateFormStatistics(String placeId);
+    StatDataResultDTO calculateStatData(String placeId);
+    long addStatDataToPlace(StatDataDTO statDataDTO, String placeId, String userId);
+    long updateReview(StatDataResultDTO data, String placeId);
 }
