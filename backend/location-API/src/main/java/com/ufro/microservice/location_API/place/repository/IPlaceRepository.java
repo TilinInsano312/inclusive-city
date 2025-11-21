@@ -48,4 +48,6 @@ public interface IPlaceRepository extends MongoRepository<Place, String>, IPLace
     @Update("{'$set': {'medals': ?1, 'rating': ?2}}")
     long updatePlaceByPlaceId(String placeId, List<String> medals, float rating);
 
+    boolean existsByPlaceId (String placeId);
+
 }
