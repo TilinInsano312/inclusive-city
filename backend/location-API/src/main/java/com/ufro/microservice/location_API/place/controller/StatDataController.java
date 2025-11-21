@@ -24,11 +24,12 @@ public class StatDataController {
                 )
         );
     }
-    @PostMapping("save/{placeId}" )
-    public ResponseEntity<ApiResponse<Long>> saveStatDataForms(StatDataDTO statDataDTO, @PathVariable String placeId) {
+    //reemplazar con la userid del authenticacion principal
+    @PostMapping("save/{placeId}/{userId}" )
+    public ResponseEntity<ApiResponse<Long>> saveStatDataForms(@RequestBody StatDataDTO statDataDTO, @PathVariable String placeId,@PathVariable String userId) {
         return ResponseEntity.ok().body(
                 new ApiResponse<>(
-                        statDataService.addStatDataToPlace(statDataDTO, placeId, "userId")
+                        statDataService.addStatDataToPlace(statDataDTO, placeId, userId)
                 )
         );
     }
