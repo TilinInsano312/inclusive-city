@@ -4,6 +4,8 @@ import com.ufro.microservice.location_API.place.dto.PlaceDTO;
 import com.ufro.microservice.location_API.place.model.Place;
 import org.mapstruct.Mapper;
 
+import java.util.List;
+
 @Mapper(componentModel = "spring")
 public interface IPlaceMapper {
     PlaceDTO toPlaceDTO(Place place);
@@ -15,4 +17,5 @@ public interface IPlaceMapper {
         place.setStatsData(dto.getStatsData());  // Asegúrate de que esto exista
         return place;
     }
+    List<PlaceDTO> toPlaceDTOs(List<Place> places);
 }
