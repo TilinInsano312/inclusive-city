@@ -27,14 +27,12 @@ public class PlacesService implements IPlaceService{
     private final GeoApiContext geoApiContext;
     private final IPlaceMapper placeMapper;
     private final IPlaceRepository placeRepository;
-    private final StatDataService statDataService;
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(PlacesService.class);
 
-    public PlacesService(GeoApiContext geoApiContext, IPlaceMapper placeMapper, IPlaceRepository placeRepository, StatDataService statDataService) {
+    public PlacesService(GeoApiContext geoApiContext, IPlaceMapper placeMapper, IPlaceRepository placeRepository) {
         this.geoApiContext = geoApiContext;
         this.placeMapper = placeMapper;
         this.placeRepository = placeRepository;
-        this.statDataService = statDataService;
     }
 
     //Buscar lugar por placeId
@@ -43,6 +41,7 @@ public class PlacesService implements IPlaceService{
     public PlaceDetailResponseDTO getPlaceDetails(String placeId) {
         try {
             PlaceDetails request = PlacesApi.placeDetails(geoApiContext, placeId)
+                    .region("cl").language("es")
                     .fields(PlaceDetailsRequest.FieldMask.PLACE_ID,
                             PlaceDetailsRequest.FieldMask.NAME,
                             PlaceDetailsRequest.FieldMask.FORMATTED_ADDRESS,
