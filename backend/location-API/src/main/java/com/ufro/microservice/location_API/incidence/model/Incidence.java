@@ -2,11 +2,12 @@ package com.ufro.microservice.location_API.incidence.model;
 
 import com.ufro.microservice.location_API.common.model.Location;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.GeoSpatialIndexType;
+import org.springframework.data.mongodb.core.index.GeoSpatialIndexed;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
-import java.util.Date;
 
 @Document(collection = "incidences")
 public class Incidence {
