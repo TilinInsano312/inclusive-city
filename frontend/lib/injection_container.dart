@@ -4,13 +4,19 @@ import 'package:inclusivecity_frontend/core/network/network_info.dart';
 import 'package:inclusivecity_frontend/features/map/data/datasources/place_remote_data_source.dart';
 import 'package:inclusivecity_frontend/features/map/data/datasources/place_remote_data_source_impl.dart';
 import 'package:inclusivecity_frontend/features/map/data/datasources/place_local_data_source.dart';
+import 'package:inclusivecity_frontend/features/map/data/datasources/spot_remote_data_source.dart';
 import 'package:inclusivecity_frontend/features/map/data/repositories/place_repository_impl.dart';
+import 'package:inclusivecity_frontend/features/map/data/repositories/spot_repository_impl.dart';
 import 'package:inclusivecity_frontend/features/map/domain/repositories/place_repository.dart';
+import 'package:inclusivecity_frontend/features/map/domain/repositories/spot_repository.dart';
 import 'package:inclusivecity_frontend/features/map/domain/usecases/get_place_detail.dart';
 import 'package:inclusivecity_frontend/features/map/domain/usecases/search_places.dart';
 import 'package:inclusivecity_frontend/features/map/domain/usecases/get_search_history.dart';
 import 'package:inclusivecity_frontend/features/map/domain/usecases/save_place_to_history.dart';
+import 'package:inclusivecity_frontend/features/map/domain/usecases/save_spot.dart';
+import 'package:inclusivecity_frontend/features/map/domain/usecases/get_user_spots.dart';
 import 'package:inclusivecity_frontend/features/map/presentation/bloc/place_bloc.dart';
+import 'package:inclusivecity_frontend/features/map/presentation/bloc/spots_bloc.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -53,6 +59,32 @@ Future<void> init() async {
 
   sl.registerLazySingleton<PlaceLocalDataSource>(
     () => PlaceLocalDataSourceImpl(sharedPreferences: sl<SharedPreferences>()),
+  );
+
+  // --- Features: Spots ---
+
+  // BLoC
+  sl.registerFactory(
+    () => SpotsBloc(
+      saveSpot: sl<SaveSpot>(),
+      getUserSpots: sl<GetUserSpots>(),
+    ),
+  );
+
+  // Use Cases
+  sl.registerLazySingleton(() => SaveSpot(sl<SpotRepository>()));
+  sl.registerLazySingleton(() => GetUserSpots(sl<SpotRepository>()));
+
+  // Repository
+  sl.registerLazySingleton<SpotRepository>(
+    () => SpotRepositoryImpl(
+      remoteDataSource: sl<SpotRemoteDataSource>(),
+    ),
+  );
+
+  // Data Sources
+  sl.registerLazySingleton<SpotRemoteDataSource>(
+    () => SpotRemoteDataSourceImpl(client: sl<http.Client>()),
   );
 
   // --- Core ---
