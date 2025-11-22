@@ -3,11 +3,10 @@ package com.ufro.microservice.location_API.incidence.dto;
 import com.ufro.microservice.location_API.common.dto.LocationDTO;
 
 import java.time.Instant;
-import java.util.Date;
 
 public class IncidenceDTO {
     private String placeId;
-    private LocationDTO locationDTO;
+    private LocationDTO location;
     private String incidence;
     private Instant expiresAt;
     private String userId;
@@ -15,7 +14,7 @@ public class IncidenceDTO {
 
     public IncidenceDTO(String placeId, LocationDTO locationDTO, String incidence, Instant expiresAt, String userId, String image) {
         this.placeId = placeId;
-        this.locationDTO = locationDTO;
+        this.location = locationDTO;
         this.incidence = incidence;
         this.expiresAt = expiresAt;
         this.userId = userId;
@@ -30,12 +29,12 @@ public class IncidenceDTO {
         this.placeId = placeId;
     }
 
-    public LocationDTO getLocationDTO() {
-        return locationDTO;
+    public LocationDTO getLocation() {
+        return location;
     }
 
-    public void setLocationDTO(LocationDTO locationDTO) {
-        this.locationDTO = locationDTO;
+    public void setLocation(LocationDTO location) {
+        this.location = location;
     }
 
     public String getIncidence() {
