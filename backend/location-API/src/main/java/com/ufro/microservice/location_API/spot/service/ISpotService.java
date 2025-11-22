@@ -1,5 +1,6 @@
 package com.ufro.microservice.location_API.spot.service;
 
+import com.ufro.microservice.location_API.common.dto.LocationDTO;
 import com.ufro.microservice.location_API.spot.dto.CustomSpotDTO;
 import com.ufro.microservice.location_API.spot.dto.SaveCustomSpotDTO;
 import com.ufro.microservice.location_API.spot.dto.SpotDTO;
@@ -12,5 +13,8 @@ public interface ISpotService {
     List<CustomSpotDTO> getAllCustomSpotsById(String idUser);
     CustomSpotDTO insertACustomSpot(CustomSpotDTO customSpotDTO);
     SaveCustomSpotDTO saveASpotInACustomSpot(SpotDTO spotDTO, String listName);
+    long deleteSpotByLocation(LocationDTO location, String userId );
+    long deleteListCustomSpotByLocation(String listName,String userId);
+    long deleteCustomSpotByLocation(String listName, String userId, LocationDTO location);
 
 }

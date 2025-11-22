@@ -1,5 +1,6 @@
 package com.ufro.microservice.location_API.spot.repository;
 
+import com.ufro.microservice.location_API.common.model.Location;
 import com.ufro.microservice.location_API.spot.model.Spot;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
@@ -11,4 +12,5 @@ import java.util.List;
 @Repository
 public interface ISpotRepository extends MongoRepository<Spot, String> {
     List<Spot> findByUserId(String userId);
+    long deleteSpotByLocationAndUserId(Location location, String userId);
 }
