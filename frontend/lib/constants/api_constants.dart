@@ -2,7 +2,7 @@ class ApiConstants {
   // Base URLs
   // Usar 10.0.2.2 para emulador Android (localhost de la máquina host)
   // Para dispositivo físico, usa la IP de tu PC (ej: 192.168.1.100)
-  static const String gatewayUrl = "http://172.27.234.90:8080";
+  static const String gatewayUrl = "http://192.168.1.11:8080";
   static const String baseApiPath = "/inclusive/api/v1";
   static const String baseUrl = "$gatewayUrl$baseApiPath";
 
@@ -14,8 +14,8 @@ class ApiConstants {
   static String placePhoto(String photoReference) => "$placesBase/photo/$photoReference";
 
   // Spots endpoints
-  static const String spotsBase = "$baseUrl/locations/spot";
-  static const String createSpot = spotsBase;
+  static const String spotsBase = "$baseUrl/locations";
+  static const String createSpot = "$spotsBase/saves";
   static String userSpots(String userId) => "$spotsBase/$userId";
 
   // Incidence endpoints
