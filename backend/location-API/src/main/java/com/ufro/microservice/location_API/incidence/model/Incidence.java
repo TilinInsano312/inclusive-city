@@ -15,6 +15,7 @@ public class Incidence {
     private String id;
     @Indexed(unique = true)
     private String placeId;
+    @GeoSpatialIndexed(type = GeoSpatialIndexType.GEO_2DSPHERE)
     private Location location;
     private String incidence;
     @Indexed(expireAfter = "0s")
