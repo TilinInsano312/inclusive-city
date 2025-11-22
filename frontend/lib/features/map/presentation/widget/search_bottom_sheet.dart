@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:inclusivecity_frontend/constants/app_colors.dart';
+import 'package:inclusivecity_frontend/core/auth/auth_service.dart';
 import 'package:inclusivecity_frontend/features/map/domain/entities/place_suggestion.dart';
+import 'package:inclusivecity_frontend/features/map/domain/entities/spot_entity.dart';
 import 'package:inclusivecity_frontend/features/map/presentation/bloc/place_bloc.dart';
+import 'package:inclusivecity_frontend/features/map/presentation/bloc/spots_bloc.dart';
 
 /// Un widget deslizable (bottom sheet) que imita el comportamiento de búsqueda
 /// de Waze o Google Maps.
@@ -26,6 +29,7 @@ class _SearchBottomSheetState extends State<SearchBottomSheet> {
   late stt.SpeechToText _speech;
   bool _isListening = false;
   List<PlaceSuggestion> _history = [];
+  List<SpotEntity> _savedSpots = [];
 
   @override
   void initState() {
@@ -36,6 +40,9 @@ class _SearchBottomSheetState extends State<SearchBottomSheet> {
     
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<PlacesBloc>().add(LoadSearchHistoryEvent());
+      // Cargar spots guardados del usuario autenticado
+      final userId = AuthService().requireUserId();
+      context.read<SpotsBloc>().add(LoadUserSpotsEvent(userId));
     });
   }
 
@@ -117,12 +124,20 @@ class _SearchBottomSheetState extends State<SearchBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return DraggableScrollableSheet(
-      controller: _sheetController,
-      initialChildSize: 0.15,
-      minChildSize: 0.15,
-      maxChildSize: 0.9,
-      builder: (BuildContext context, ScrollController scrollController) {
+    return BlocListener<SpotsBloc, SpotsState>(
+      listener: (context, state) {
+        // Recargar spots cuando se guarde uno nuevo
+        if (state is SpotSaved) {
+          final userId = AuthService().requireUserId();
+          context.read<SpotsBloc>().add(LoadUserSpotsEvent(userId));
+        }
+      },
+      child: DraggableScrollableSheet(
+        controller: _sheetController,
+        initialChildSize: 0.15,
+        minChildSize: 0.15,
+        maxChildSize: 0.9,
+        builder: (BuildContext context, ScrollController scrollController) {
         return BlocBuilder<PlacesBloc, PlacesState>(
           builder: (context, state) {
             if (state is SearchHistoryLoaded) {
@@ -167,7 +182,8 @@ class _SearchBottomSheetState extends State<SearchBottomSheet> {
             );
           },
         );
-      },
+        },
+      ),
     );
   }
 
@@ -249,36 +265,162 @@ class _SearchBottomSheetState extends State<SearchBottomSheet> {
     );
   }
 
-  /// Los botones de atajo (Casa, Trabajo, Añadir)
+  /// Los botones de atajo en carrusel horizontal (Casa, Trabajo, otros spots, + Añadir)
   Widget _buildShortcutButtons() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _buildChipButton(
-            label: "Casa",
-            icon: Icons.home,
-            onPressed: () {
-              // TODO: Implementar navegación a la ruta guardada como "Casa"
-              print("Ir a Casa");
+    return BlocBuilder<SpotsBloc, SpotsState>(
+      builder: (context, spotsState) {
+        // Actualizar spots guardados cuando se cargan
+        if (spotsState is SpotsLoaded) {
+          _savedSpots = spotsState.spots;
+        }
+
+        // Crear lista de todos los spots incluyendo predeterminados
+        final List<Map<String, dynamic>> allSpots = [];
+
+        // 1. Casa
+        final homeSpot = _savedSpots.firstWhere(
+          (spot) => spot.type?.toLowerCase() == 'casa',
+          orElse: () => const SpotEntity(
+            userId: '',
+            spotName: '',
+            placeId: '',
+            address: '',
+            latitude: 0,
+            longitude: 0,
+          ),
+        );
+        allSpots.add({
+          'label': homeSpot.spotName.isEmpty ? 'Casa' : homeSpot.spotName,
+          'icon': Icons.home,
+          'isActive': homeSpot.placeId.isNotEmpty,
+          'spot': homeSpot,
+          'type': 'casa',
+        });
+
+        // 2. Trabajo
+        final workSpot = _savedSpots.firstWhere(
+          (spot) => spot.type?.toLowerCase() == 'trabajo',
+          orElse: () => const SpotEntity(
+            userId: '',
+            spotName: '',
+            placeId: '',
+            address: '',
+            latitude: 0,
+            longitude: 0,
+          ),
+        );
+        allSpots.add({
+          'label': workSpot.spotName.isEmpty ? 'Trabajo' : workSpot.spotName,
+          'icon': Icons.work,
+          'isActive': workSpot.placeId.isNotEmpty,
+          'spot': workSpot,
+          'type': 'trabajo',
+        });
+
+        // 3. Otros spots (no Casa ni Trabajo)
+        final otherSpots = _savedSpots.where(
+          (spot) => spot.type?.toLowerCase() != 'casa' && 
+                    spot.type?.toLowerCase() != 'trabajo',
+        ).toList();
+
+        for (var spot in otherSpots) {
+          allSpots.add({
+            'label': spot.spotName,
+            'icon': _getSpotIcon(spot.type),
+            'isActive': true,
+            'spot': spot,
+            'type': 'other',
+          });
+        }
+
+        return SizedBox(
+          height: 50,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+            itemCount: allSpots.length + 1, // +1 para el botón añadir
+            itemBuilder: (context, index) {
+              // Último elemento es el botón añadir
+              if (index == allSpots.length) {
+                return Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: _buildChipButton(
+                    label: "Añadir",
+                    icon: Icons.add,
+                    isActive: true,
+                    onPressed: () => _showAddSpotOptions(context),
+                  ),
+                );
+              }
+
+              final spotData = allSpots[index];
+              final spot = spotData['spot'] as SpotEntity;
+              final type = spotData['type'] as String;
+
+              return Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: _buildChipButton(
+                  label: spotData['label'] as String,
+                  icon: spotData['icon'] as IconData,
+                  isActive: spotData['isActive'] as bool,
+                  onPressed: () => _handleSpotPress(context, spot, type),
+                ),
+              );
             },
           ),
-          _buildChipButton(
-            label: "Trabajo",
-            icon: Icons.work,
-            onPressed: () {
-              // TODO: Implementar navegación a la ruta guardada como "Trabajo"
-              print("Ir a Trabajo");
-            },
+        );
+      },
+    );
+  }
+
+  void _handleSpotPress(BuildContext context, SpotEntity spot, String type) {
+    if (spot.placeId.isEmpty) {
+      // No existe spot guardado - mostrar opciones para crear
+      _showCreateSpotDialog(context, type);
+    } else {
+      // Existe spot - navegar y mostrar detalles
+      context.read<PlacesBloc>().add(SelectPlaceEvent(spot.placeId));
+    }
+  }
+
+  void _showCreateSpotDialog(BuildContext context, String type) {
+    final typeName = type == 'casa' ? 'Casa' : 'Trabajo';
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Agregar $typeName'),
+        content: Text(
+          'Aún no has guardado tu $typeName.\n\n'
+          'Busca un lugar en el mapa y guárdalo como "$typeName" '
+          'usando el botón de bookmark en los detalles del lugar.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Entendido'),
           ),
-          _buildChipButton(
-            label: "Añadir",
-            icon: Icons.add,
-            onPressed: () {
-              // TODO: Implementar navegación para añadir un nuevo lugar
-              print("Añadir lugar");
-            },
+        ],
+      ),
+    );
+  }
+
+  void _showAddSpotOptions(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Agregar Lugar'),
+        content: const Text(
+          'Para agregar un nuevo lugar:\n\n'
+          '1. Busca el lugar en el mapa\n'
+          '2. Abre sus detalles\n'
+          '3. Presiona el botón de bookmark (guardar)\n'
+          '4. Elige un nombre y tipo\n\n'
+          'El lugar aparecerá aquí automáticamente.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Entendido'),
           ),
         ],
       ),
@@ -290,19 +432,24 @@ class _SearchBottomSheetState extends State<SearchBottomSheet> {
     required String label,
     required IconData icon,
     required VoidCallback onPressed,
+    required bool isActive,
   }) {
     return ElevatedButton.icon(
-      icon: Icon(icon, color: AppColors.primaryNormal, size: 20),
+      icon: Icon(
+        icon,
+        color: isActive ? AppColors.primaryNormal : Colors.grey,
+        size: 20,
+      ),
       label: Text(
         label,
-        style: const TextStyle(
-          color: AppColors.neutralDarkDarker,
+        style: TextStyle(
+          color: isActive ? AppColors.neutralDarkDarker : Colors.grey[600],
           fontWeight: FontWeight.w600,
         ),
       ),
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.neutralLight,
+        backgroundColor: isActive ? AppColors.neutralLight : Colors.grey[200],
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20.0),
@@ -310,6 +457,21 @@ class _SearchBottomSheetState extends State<SearchBottomSheet> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       ),
     );
+  }
+
+  IconData _getSpotIcon(String? type) {
+    switch (type?.toLowerCase()) {
+      case 'escuela':
+        return Icons.school;
+      case 'gimnasio':
+        return Icons.fitness_center;
+      case 'casa':
+        return Icons.home;
+      case 'trabajo':
+        return Icons.work;
+      default:
+        return Icons.place;
+    }
   }
 
   /// Muestra el contenido por defecto (Recientes, Mis Listas)

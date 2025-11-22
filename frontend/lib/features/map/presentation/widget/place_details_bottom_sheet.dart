@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:inclusivecity_frontend/constants/app_colors.dart';
+import 'package:inclusivecity_frontend/core/auth/auth_service.dart';
 import 'package:inclusivecity_frontend/features/map/domain/entities/place_details.dart';
+import 'package:inclusivecity_frontend/features/map/domain/entities/spot_entity.dart';
+import 'package:inclusivecity_frontend/features/map/presentation/bloc/spots_bloc.dart';
+import 'package:inclusivecity_frontend/features/map/presentation/bloc/spots_event.dart';
+import 'package:inclusivecity_frontend/features/map/presentation/widget/save_spot_dialog.dart';
 import 'package:inclusivecity_frontend/constants/api_constants.dart';
 
 /// Bottom Sheet deslizable que muestra los detalles completos de un lugar
@@ -139,10 +145,7 @@ class _PlaceDetailsBottomSheetState extends State<PlaceDetailsBottomSheet> {
           icon: const Icon(Icons.bookmark_border),
           color: AppColors.primaryNormal,
           iconSize: 28,
-          onPressed: () {
-            // TODO: Implementar guardar en lista
-            debugPrint('Guardar lugar: ${widget.placeDetails.placeId}');
-          },
+          onPressed: () => _showSaveSpotDialog(context),
         ),
         // Botón de compartir
         IconButton(
@@ -163,6 +166,42 @@ class _PlaceDetailsBottomSheetState extends State<PlaceDetailsBottomSheet> {
         ),
       ],
     );
+  }
+
+  void _showSaveSpotDialog(BuildContext context) async {
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (context) => SaveSpotDialog(
+        placeId: widget.placeDetails.placeId,
+        address: widget.placeDetails.address,
+        latitude: widget.placeDetails.latitude,
+        longitude: widget.placeDetails.longitude,
+      ),
+    );
+
+    if (result != null && mounted) {
+      final userId = AuthService().requireUserId();
+      
+      final spot = SpotEntity(
+        userId: userId,
+        spotName: result['name'] as String,
+        placeId: widget.placeDetails.placeId,
+        address: widget.placeDetails.address,
+        latitude: widget.placeDetails.latitude,
+        longitude: widget.placeDetails.longitude,
+        type: result['type'] as String,
+      );
+
+      context.read<SpotsBloc>().add(SaveSpotEvent(spot));
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${result['name']} guardado correctamente'),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   Widget _buildPhotoGallery(List<String> photoReferences) {
