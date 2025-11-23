@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/places.dart' as places_api;
 import 'package:inclusivecity_frontend/constants/app_colors.dart';
@@ -28,8 +29,9 @@ class _MapPageState extends State<MapPage> {
   @override
   void initState() {
     super.initState();
-    // Inicializar la API de Google Places con la misma API Key
-    _placesApi = places_api.GoogleMapsPlaces(apiKey: 'AIzaSyBzEsyWdfmzVtrUCrNOob2mbEDizVRkiZw');
+    // Inicializar la API de Google Places con la API Key desde .env
+    final apiKey = dotenv.env['GOOGLE_MAPS_API_KEY'] ?? '';
+    _placesApi = places_api.GoogleMapsPlaces(apiKey: apiKey);
     // Disparar el evento para obtener la ubicación del usuario al iniciar
     context.read<PlacesBloc>().add(GetUserLocationEvent());
   }
