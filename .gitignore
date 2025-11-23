@@ -33,6 +33,7 @@ frontend/.flutter-plugins*
 frontend/.packages
 frontend/.pub*/
 frontend/build/
+frontend/.env
 
 # IDE
 frontend/.idea/
