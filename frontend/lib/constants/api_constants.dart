@@ -10,14 +10,14 @@ class ApiConstants {
 
   // === LOCATION API (puerto 8070) ===
   // Places endpoints
-  static String get placesBase => "$baseUrl/locations/place";
+  static String get placesBase => "$baseUrl/location/place";
   static String get placesSearch => "$placesBase/search";
   static String placeDetails(String placeId) => "$placesBase/$placeId";
   static String placePhoto(String photoReference) => "$placesBase/photo/$photoReference";
 
   // Spots endpoints
-  static String get spotsBase => "$baseUrl/locations";
-  static String get createSpot => "$spotsBase/saves";
+  static String get spotsBase => "$baseUrl/location/spot";
+  static String get createSpot => "$spotsBase/insert";
   static String userSpots(String userId) => "$spotsBase/$userId";
 
   // Incidence endpoints
