@@ -63,7 +63,7 @@ class _AddSpotDialogState extends State<AddSpotDialog> {
   void _selectPlace(PlaceSuggestion place) {
     setState(() {
       _selectedPlace = place;
-      _searchController.text = place.description.split(' - ')[0]; // Solo nombre
+      _searchController.text = place.description; // description es solo el nombre
       _showResults = false; // Ocultar resultados después de seleccionar
     });
   }
@@ -101,9 +101,9 @@ class _AddSpotDialogState extends State<AddSpotDialog> {
       userId: userId,
       spotName: spotName,
       placeId: _selectedPlace!.placeId,
-      address: _selectedPlace!.description,
-      latitude: 0, // Se obtendrá del backend al buscar el place_id
-      longitude: 0,
+      address: _selectedPlace!.address ?? _selectedPlace!.description, // Usar address, no description
+      latitude: _selectedPlace!.latitude ?? 0,
+      longitude: _selectedPlace!.longitude ?? 0,
       type: _selectedType,
     );
 
@@ -296,7 +296,7 @@ class _AddSpotDialogState extends State<AddSpotDialog> {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    _selectedPlace!.description.split(' - ')[0],
+                                    _selectedPlace!.description,
                                     style: const TextStyle(
                                       fontSize: 15,
                                       fontWeight: FontWeight.w700,
@@ -371,11 +371,6 @@ class _AddSpotDialogState extends State<AddSpotDialog> {
                               separatorBuilder: (_, __) => const Divider(height: 1),
                               itemBuilder: (context, index) {
                                 final place = state.suggestions[index];
-                                // Separar nombre y dirección si están juntos
-                                final parts = place.description.split(' - ');
-                                final name = parts[0];
-                                final addressFromDesc = parts.length > 1 ? parts[1] : null;
-                                final displayAddress = place.address ?? addressFromDesc;
                                 
                                 return ListTile(
                                   leading: Container(
@@ -391,7 +386,7 @@ class _AddSpotDialogState extends State<AddSpotDialog> {
                                     ),
                                   ),
                                   title: Text(
-                                    name,
+                                    place.description,
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w600,
                                       fontSize: 15,
@@ -400,7 +395,7 @@ class _AddSpotDialogState extends State<AddSpotDialog> {
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
-                                  subtitle: displayAddress != null && displayAddress.isNotEmpty
+                                  subtitle: place.address != null && place.address!.isNotEmpty
                                       ? Padding(
                                           padding: const EdgeInsets.only(top: 4),
                                           child: Row(
@@ -409,7 +404,7 @@ class _AddSpotDialogState extends State<AddSpotDialog> {
                                               const SizedBox(width: 4),
                                               Expanded(
                                                 child: Text(
-                                                  displayAddress,
+                                                  place.address!,
                                                   style: TextStyle(
                                                     fontSize: 13,
                                                     color: Colors.grey[700],
