@@ -2,8 +2,11 @@ package com.ufro.microservice.authentication_service.config.jwt;
 
 import com.ufro.microservice.authentication_service.model.User;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
@@ -15,6 +18,7 @@ public class JwtUtils {
     private final Long expiration;
     private final SecretKey secretKey;
     private final SecretKey refreshKey;
+    private static final Logger log = LoggerFactory.getLogger(JwtFilter.class);
 
     public JwtUtils(
             @Value("${jwt.secret}") String secret,
@@ -64,13 +68,19 @@ public class JwtUtils {
 
     public boolean isTokenValid(String token) {
         try {
-            Jwts.parser()
+            Claims claims = Jwts.parser()
                     .verifyWith(secretKey)
                     .build()
-                    .parseSignedClaims(token);
-            return true;
+                    .parseSignedClaims(token)
+                    .getPayload();
+            return claims.getExpiration().after(new Date());
+        } catch (ExpiredJwtException e) {
+            log.warn("Expired token: {}", e.getMessage());
+            return false;
         } catch (Exception e) {
+            log.error("Invalid token: {}", e.getMessage());
             return false;
         }
     }
+
 }
