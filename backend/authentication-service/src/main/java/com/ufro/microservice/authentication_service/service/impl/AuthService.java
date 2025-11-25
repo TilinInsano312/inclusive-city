@@ -56,7 +56,11 @@ public class AuthService implements IAuthService {
 
     @Override
     public long resetPassword(ResetPasswordRequestDTO resetPasswordDTO) {
-        return userCrendentialRepository.updateUserByEmail(resetPasswordDTO.getEmail(), resetPasswordDTO.getNewPassword());
+        String hashedPassword = passwordEncoder.encode(resetPasswordDTO.getNewPassword());
+        return userCrendentialRepository.updateUserByEmail(
+                resetPasswordDTO.getEmail(),
+                hashedPassword
+        );
     }
 
     @Override
