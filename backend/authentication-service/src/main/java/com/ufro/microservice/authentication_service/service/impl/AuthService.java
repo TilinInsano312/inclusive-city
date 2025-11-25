@@ -23,7 +23,7 @@ public class AuthService implements IAuthService {
     private final JwtUtils jwtUtils;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
-    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
+    
 
     public AuthService(IUserCrendentialRepository userCrendentialRepository, IUserMapper userMapper, JwtUtils jwtUtils, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager) {
         this.userCrendentialRepository = userCrendentialRepository;
