@@ -7,8 +7,6 @@ import com.ufro.microservice.authentication_service.mapper.IUserMapper;
 import com.ufro.microservice.authentication_service.model.User;
 import com.ufro.microservice.authentication_service.repository.IUserCrendentialRepository;
 import com.ufro.microservice.authentication_service.service.IAuthService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -23,7 +21,7 @@ public class AuthService implements IAuthService {
     private final JwtUtils jwtUtils;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
-    
+
 
     public AuthService(IUserCrendentialRepository userCrendentialRepository, IUserMapper userMapper, JwtUtils jwtUtils, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager) {
         this.userCrendentialRepository = userCrendentialRepository;
