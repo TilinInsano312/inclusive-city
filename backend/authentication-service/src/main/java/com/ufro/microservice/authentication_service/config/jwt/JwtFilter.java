@@ -30,34 +30,51 @@ public class JwtFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String path = request.getRequestURI();
-        if (path.equals("inclusive/api/v1/account/auth/login") || path.equals("inclusive/api/v1/account/auth/register")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
         String authHeader = request.getHeader("Authorization");
-        log.info("Authorization header: {}", authHeader);
+        log.info("Authorization header present: {}", authHeader != null);
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String jwt = authHeader.substring(7);
-
-            if (jwtUtils.isTokenValid(jwt)) {
-                log.info("Valid JWT token");
-                String email = jwtUtils.getEmailFromToken(jwt);
-                // Load user details using email
-                UserDetails user = userDetailsService.loadUserByUsername(email);
-
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(
-                                user,
-                                null,
-                                user.getAuthorities()
-                        );
-
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            }
+        if (!processAuthentication(authHeader, response)) {
+            return;
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private boolean processAuthentication(String authHeader, HttpServletResponse response) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return true;
+        }
+
+        String jwt = authHeader.substring(7);
+        return validateAndSetAuthentication(jwt, response);
+    }
+
+    private boolean validateAndSetAuthentication(String jwt, HttpServletResponse response) {
+        try {
+            if (!jwtUtils.isTokenValid(jwt)) {
+                handleInvalidToken(response, "Token JWT inválido o expirado");
+                return false;
+            }
+
+            setAuthentication(jwt);
+            return true;
+        } catch (Exception e) {
+            log.error("Error procesando JWT: {}", e.getMessage());
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return false;
+        }
+    }
+
+    private void setAuthentication(String jwt) {
+        String email = jwtUtils.getEmailFromToken(jwt);
+        UserDetails user = userDetailsService.loadUserByUsername(email);
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
+
+    private void handleInvalidToken(HttpServletResponse response, String message) {
+        log.warn(message);
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     }
 }
