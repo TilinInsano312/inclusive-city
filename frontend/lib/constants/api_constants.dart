@@ -1,39 +1,41 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 class ApiConstants {
-  // Base URLs
+  // Base URLs - Cargar desde .env
   // Usar 10.0.2.2 para emulador Android (localhost de la máquina host)
-  // Para dispositivo físico, usa la IP de tu PC (ej: 192.168.1.100)
-  static const String gatewayUrl = "http://192.168.1.11:8080";
+  // Para dispositivo físico, usa la IP de tu PC en el .env (ej: http://192.168.1.100:8080)
+  static String get gatewayUrl => dotenv.env['BACKEND_GATEWAY_URL'] ?? 'http://localhost:8080';
   static const String baseApiPath = "/inclusive/api/v1";
-  static const String baseUrl = "$gatewayUrl$baseApiPath";
+  static String get baseUrl => "$gatewayUrl$baseApiPath";
 
   // === LOCATION API (puerto 8070) ===
   // Places endpoints
-  static const String placesBase = "$baseUrl/locations/place";
-  static const String placesSearch = "$placesBase/search";
+  static String get placesBase => "$baseUrl/location/place";
+  static String get placesSearch => "$placesBase/search";
   static String placeDetails(String placeId) => "$placesBase/$placeId";
   static String placePhoto(String photoReference) => "$placesBase/photo/$photoReference";
 
   // Spots endpoints
-  static const String spotsBase = "$baseUrl/locations";
-  static const String createSpot = "$spotsBase/saves";
+  static String get spotsBase => "$baseUrl/location/spot";
+  static String get createSpot => "$spotsBase/insert";
   static String userSpots(String userId) => "$spotsBase/$userId";
 
   // Incidence endpoints
-  static const String incidenceBase = "$baseUrl/incidence";
-  static const String createIncidence = incidenceBase;
-  static const String allIncidences = "$incidenceBase/all";
+  static String get incidenceBase => "$baseUrl/incidence";
+  static String get createIncidence => incidenceBase;
+  static String get allIncidences => "$incidenceBase/all";
 
   // === ROUTE API (puerto 8060) ===
-  static const String routeBase = "$baseUrl/routes";
+  static String get routeBase => "$baseUrl/routes";
 
   // === ACCOUNT API (puerto 8090) ===
-  static const String profileBase = "$baseUrl/profile";
-  static const String formsBase = "$baseUrl/form";
+  static String get profileBase => "$baseUrl/profile";
+  static String get formsBase => "$baseUrl/form";
 
   // === AUTHENTICATION (puerto 9090) ===
-  static const String login = "$baseUrl/login";
-  static const String register = "$baseUrl/register";
-  static const String resetPassword = "$baseUrl/reset";
+  static String get login => "$baseUrl/login";
+  static String get register => "$baseUrl/register";
+  static String get resetPassword => "$baseUrl/reset";
 
   // Headers
   static const Map<String, String> jsonHeaders = {

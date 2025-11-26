@@ -7,6 +7,7 @@ import 'package:inclusivecity_frontend/features/map/domain/entities/place_sugges
 import 'package:inclusivecity_frontend/features/map/domain/entities/spot_entity.dart';
 import 'package:inclusivecity_frontend/features/map/presentation/bloc/place_bloc.dart';
 import 'package:inclusivecity_frontend/features/map/presentation/bloc/spots_bloc.dart';
+import 'package:inclusivecity_frontend/features/map/presentation/widget/add_spot_dialog.dart';
 
 /// Un widget deslizable (bottom sheet) que imita el comportamiento de búsqueda
 /// de Waze o Google Maps.
@@ -348,7 +349,7 @@ class _SearchBottomSheetState extends State<SearchBottomSheet> {
                     label: "Añadir",
                     icon: Icons.add,
                     isActive: true,
-                    onPressed: () => _showAddSpotOptions(context),
+                    onPressed: () => _showAddSpotDialog(context),
                   ),
                 );
               }
@@ -404,25 +405,15 @@ class _SearchBottomSheetState extends State<SearchBottomSheet> {
     );
   }
 
-  void _showAddSpotOptions(BuildContext context) {
+  void _showAddSpotDialog(BuildContext context) {
+    // Limpiar el estado del BLoC antes de abrir el diálogo
+    context.read<PlacesBloc>().add(LoadSearchHistoryEvent());
+    
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Agregar Lugar'),
-        content: const Text(
-          'Para agregar un nuevo lugar:\n\n'
-          '1. Busca el lugar en el mapa\n'
-          '2. Abre sus detalles\n'
-          '3. Presiona el botón de bookmark (guardar)\n'
-          '4. Elige un nombre y tipo\n\n'
-          'El lugar aparecerá aquí automáticamente.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Entendido'),
-          ),
-        ],
+      builder: (dialogContext) => AddSpotDialog(
+        spotsBloc: context.read<SpotsBloc>(),
+        placesBloc: context.read<PlacesBloc>(),
       ),
     );
   }

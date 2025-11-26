@@ -14,6 +14,21 @@ if (keystorePropertiesFile.exists()) {
     localProperties.load(keystorePropertiesFile.inputStream())
 }
 
+// Intentar leer desde .env si no está en local.properties
+if (localProperties.getProperty("GOOGLE_MAPS_API_KEY") == null) {
+    val envFile = rootProject.file("../.env")
+    if (envFile.exists()) {
+        envFile.forEachLine { line ->
+            if (line.trim().startsWith("GOOGLE_MAPS_API_KEY=")) {
+                val key = line.substringAfter("=").trim()
+                if (key.isNotEmpty()) {
+                    localProperties.setProperty("GOOGLE_MAPS_API_KEY", key)
+                }
+            }
+        }
+    }
+}
+
 android {
     namespace = "com.inclusiveCity.inclusivecity_frontend"
     compileSdk = flutter.compileSdkVersion

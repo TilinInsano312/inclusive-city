@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/places.dart' as places_api;
 import 'package:inclusivecity_frontend/constants/app_colors.dart';
@@ -23,13 +24,15 @@ class _MapPageState extends State<MapPage> {
   final Set<Marker> _markers = {};
   PlaceDetails? _selectedPlaceDetails;
   bool _showDetailsSheet = false;
+  bool _isCenteredOnUser = false; // Nuevo: rastrea si el mapa está centrado en el usuario
   late places_api.GoogleMapsPlaces _placesApi;
 
   @override
   void initState() {
     super.initState();
-    // Inicializar la API de Google Places con la misma API Key
-    _placesApi = places_api.GoogleMapsPlaces(apiKey: 'AIzaSyBzEsyWdfmzVtrUCrNOob2mbEDizVRkiZw');
+    // Inicializar la API de Google Places con la API Key desde .env
+    final apiKey = dotenv.env['GOOGLE_MAPS_API_KEY'] ?? '';
+    _placesApi = places_api.GoogleMapsPlaces(apiKey: apiKey);
     // Disparar el evento para obtener la ubicación del usuario al iniciar
     context.read<PlacesBloc>().add(GetUserLocationEvent());
   }
@@ -208,9 +211,13 @@ class _MapPageState extends State<MapPage> {
               16.0,
             ),
           );
+          setState(() {
+            _isCenteredOnUser = true;
+          });
         } else if (state is PlacesLoaded && state.suggestions.isNotEmpty) {
           // Cuando hay resultados de búsqueda, agregar marcadores en el mapa
           setState(() {
+            _isCenteredOnUser = false;
             _markers.clear();
             for (var suggestion in state.suggestions) {
               if (suggestion.latitude != null && suggestion.longitude != null) {
@@ -248,6 +255,7 @@ class _MapPageState extends State<MapPage> {
           
           // Agregar/actualizar marcador
           setState(() {
+            _isCenteredOnUser = false;
             _markers.clear();
             _markers.add(
               Marker(
@@ -332,14 +340,38 @@ class _MapPageState extends State<MapPage> {
                   child: AnimatedOpacity(
                     duration: const Duration(milliseconds: 200),
                     opacity: shouldShow ? 1.0 : 0.0,
-                    child: FloatingActionButton(
-                      heroTag: 'menuButton',
-                      backgroundColor: AppColors.primaryNormal,
-                      child: const Icon(Icons.menu, color: AppColors.surface),
-                      onPressed: () {
-                        // TODO: Implementar la apertura del Drawer/Menú lateral
-                        print("Botón de menú presionado");
-                      },
+                    child: Container(
+                      width: 64.0,
+                      height: 64.0,
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryNormal,
+                        borderRadius: BorderRadius.circular(14.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 8.0,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        borderRadius: BorderRadius.circular(14.0),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(14.0),
+                          onTap: () {
+                            // TODO: Implementar la apertura del Drawer/Menú lateral
+                            print("Botón de menú presionado");
+                          },
+                          child: const Center(
+                            child: Icon(
+                              Icons.menu,
+                              color: AppColors.surface,
+                              size: 32.0,
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 );
@@ -347,18 +379,101 @@ class _MapPageState extends State<MapPage> {
             ),
 
 
-            Positioned(
-              bottom: 180.0,
-              right: 16.0,
-              child: FloatingActionButton(
-                heroTag: 'gpsButton',
-                backgroundColor: AppColors.surface,
-                child: const Icon(Icons.my_location, color: AppColors.primaryNormal),
-                onPressed: () {
-                  // Disparar el evento para obtener la ubicación del usuario
-                  context.read<PlacesBloc>().add(GetUserLocationEvent());
-                },
-              ),
+            // Botón de GPS (azul) - lado izquierdo
+            ValueListenableBuilder<double>(
+              valueListenable: _sheetSizeNotifier,
+              builder: (context, sheetSize, child) {
+                final shouldShow = sheetSize < 0.3 && !_showDetailsSheet;
+                return AnimatedPositioned(
+                  duration: const Duration(milliseconds: 200),
+                  bottom: shouldShow ? 148.0 : -100.0,
+                  left: 16.0,
+                  child: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 200),
+                    opacity: shouldShow ? 1.0 : 0.0,
+                    child: Container(
+                      width: 64.0,
+                      height: 64.0,
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryNormal,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 8.0,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(32.0),
+                          onTap: () {
+                            context.read<PlacesBloc>().add(GetUserLocationEvent());
+                          },
+                          child: const Center(
+                            child: Icon(
+                              Icons.navigation_rounded,
+                              color: AppColors.surface,
+                              size: 32.0,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+
+            // Botón de incidencias (amarillo) - lado derecho, solo cuando está centrado en el usuario
+            ValueListenableBuilder<double>(
+              valueListenable: _sheetSizeNotifier,
+              builder: (context, sheetSize, child) {
+                final shouldShow = sheetSize < 0.3 && !_showDetailsSheet && _isCenteredOnUser;
+                return AnimatedPositioned(
+                  duration: const Duration(milliseconds: 200),
+                  bottom: shouldShow ? 148.0 : -100.0,
+                  right: 16.0,
+                  child: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 200),
+                    opacity: shouldShow ? 1.0 : 0.0,
+                    child: Container(
+                      width: 64.0,
+                      height: 64.0,
+                      decoration: BoxDecoration(
+                        color: AppColors.warning,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 8.0,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(32.0),
+                          onTap: () {
+                            // TODO: Implementar la funcionalidad de incidencias
+                            print("Botón de incidencias presionado");
+                          },
+                          child: const Center(
+                            child: Icon(
+                              Icons.warning_amber_rounded,
+                              color: AppColors.surface,
+                              size: 32.0,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
           ],
         ),
