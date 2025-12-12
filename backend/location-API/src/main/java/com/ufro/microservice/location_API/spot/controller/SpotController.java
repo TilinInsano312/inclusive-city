@@ -10,6 +10,8 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -35,11 +37,12 @@ public class SpotController {
         );
     }
 
-    @GetMapping("{idUser}")
-    public ResponseEntity<ApiResponse<List<SpotDTO>>> getSpotByIdUser(@PathVariable @Valid String idUser) {
+    @GetMapping("user-spots")
+    public ResponseEntity<ApiResponse<List<SpotDTO>>> getSpotByIdUser(@AuthenticationPrincipal Jwt token) {
+        String userId = token.getClaims().get("userId").toString();
         return ResponseEntity.ok(
                 new ApiResponse<>(
-                        this.spotService.getAllSpotsById(idUser)
+                        this.spotService.getAllSpotsById(userId)
                 )
         );
 
@@ -54,11 +57,12 @@ public class SpotController {
         );
     }
 
-    @GetMapping("custom-spot/{idUser} ")
-    public ResponseEntity<ApiResponse<List<CustomSpotDTO>>> getAllCustomSpotsById(@PathVariable @Valid String idUser) {
+    @GetMapping("custom-spot")
+    public ResponseEntity<ApiResponse<List<CustomSpotDTO>>> getAllCustomSpotsById(@AuthenticationPrincipal Jwt token) {
+        String userId = token.getClaims().get("userId").toString();
         return ResponseEntity.ok().body(
                 new ApiResponse<>(
-                        this.spotService.getAllCustomSpotsById(idUser)
+                        this.spotService.getAllCustomSpotsById(userId)
                 )
         );
     }
@@ -70,8 +74,9 @@ public class SpotController {
                 )
         );
     }
-    @DeleteMapping("delete/spot/{userId}" )
-    public ResponseEntity<ApiResponse<Long>> deleteSpotByLocation(@RequestBody @Valid LocationDTO location, @PathVariable("userId") String userId) {
+    @DeleteMapping("delete/spot" )
+    public ResponseEntity<ApiResponse<Long>> deleteSpotByLocation(@RequestBody @Valid LocationDTO location, @AuthenticationPrincipal Jwt token) {
+        String userId = token.getClaims().get("userId").toString();
         log.info("Received request to delete spot for userId: {} at location: {}", userId, location);
         return ResponseEntity.ok().body(
                 new ApiResponse<>(
@@ -79,9 +84,9 @@ public class SpotController {
                 )
         );
     }
-    @DeleteMapping("custom-spot/list/{userId}/{listName}" )
-    public ResponseEntity<ApiResponse<Long>> deleteListCustomSpotByLocation(@PathVariable("userId") String userId,
-                                                                            @PathVariable("listName") String listName) {
+    @DeleteMapping("custom-spot/list/{listName}" )
+    public ResponseEntity<ApiResponse<Long>> deleteListCustomSpotByLocation(@PathVariable("listName") String listName, @AuthenticationPrincipal Jwt token){
+        String userId = token.getClaims().get("userId").toString();
         log.info("Received request to delete custom spot list: {} for userId: {}", listName, userId);
         return ResponseEntity.ok().body(
                 new ApiResponse<>(
@@ -89,10 +94,11 @@ public class SpotController {
                 )
         );
     }
-    @DeleteMapping("custom-spot/spot/{userId}/{listName}" )
+    @DeleteMapping("custom-spot/spot/{listName}" )
     public ResponseEntity<ApiResponse<Long>> deleteCustomSpotByLocation(@RequestBody @Valid LocationDTO location,
-                                                                        @PathVariable("userId") String userId,
-                                                                        @PathVariable("listName") String listName){
+                                                                        @PathVariable("listName") String listName,
+                                                                        @AuthenticationPrincipal Jwt token){
+        String userId = token.getClaims().get("userId").toString();
         log.info("Received request to delete custom spot in list: {} for userId: {} at location: {}", listName, userId, location);
         return ResponseEntity.ok().body(
                 new ApiResponse<>(
