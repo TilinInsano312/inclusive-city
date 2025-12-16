@@ -1,9 +1,15 @@
 package com.ufro.microservice.location_API.incidence.dto;
 
 import com.ufro.microservice.location_API.common.dto.LocationDTO;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public class LocationSectorRequest {
+    @NotNull(message = "Cannot be null")
+    @NotBlank(message = "Cannot be blank")
     private LocationDTO pointNorthEast;
+    @NotNull(message = "Cannot be null")
+    @NotBlank(message = "Cannot be blank")
     private LocationDTO pointSouthWest;
 
     public LocationDTO getPointNorthEast() {

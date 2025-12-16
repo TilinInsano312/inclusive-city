@@ -2,6 +2,25 @@ package com.ufro.microservice.location_API.spot.dto;
 
 
 import com.ufro.microservice.location_API.common.dto.LocationDTO;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
-public record SpotDTO(String userId, String spotName, String placeId, String address, LocationDTO location, String type) {
+public record SpotDTO(@NotNull(message = "Cannot be null")
+                      @NotBlank(message = "Cannot be blank")
+                      String userId,
+                      @NotNull(message = "Cannot be null")
+                      @NotBlank(message = "Cannot be blank")
+                      String spotName,
+                      @NotNull(message = "Cannot be null")
+                      @NotBlank(message = "Cannot be blank")
+                      String placeId,
+                      @NotNull(message = "Cannot be null")
+                      @NotBlank(message = "Cannot be blank")
+                      String address,
+                      @NotNull(message = "Cannot be null")
+                      @NotBlank(message = "Cannot be blank")
+                      LocationDTO location,
+                      @NotNull(message = "Cannot be null")
+                      @NotBlank(message = "Cannot be blank")
+                      String type) {
 }

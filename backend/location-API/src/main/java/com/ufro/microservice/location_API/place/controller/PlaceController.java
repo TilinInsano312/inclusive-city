@@ -5,6 +5,7 @@ import com.ufro.microservice.location_API.place.dto.PhotoDTO;
 import com.ufro.microservice.location_API.place.dto.PlaceDetailResponseDTO;
 import com.ufro.microservice.location_API.place.dto.PlaceSearchResponseDTO;
 import com.ufro.microservice.location_API.place.service.IPlaceService;
+import jakarta.validation.Valid;
 import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +29,7 @@ public class PlaceController {
         return ResponseEntity.ok().body(new ApiResponse<>(placeService.getPlaceDetails(placeId)));
     }
     @PostMapping("search")
-    public ResponseEntity<ApiResponse<List<PlaceSearchResponseDTO>>> getPlaceBySearch(@RequestBody String query) {
+    public ResponseEntity<ApiResponse<List<PlaceSearchResponseDTO>>> getPlaceBySearch(@RequestBody @Valid String query) {
         return ResponseEntity.ok().body(new ApiResponse<>(placeService.getPlaceBySearch(query)));
     }
 

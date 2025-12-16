@@ -3,6 +3,7 @@ package com.ufro.microservice.location_API.place.controller;
 import com.ufro.microservice.location_API.common.response.ApiResponse;
 import com.ufro.microservice.location_API.place.dto.StatDataDTO;
 import com.ufro.microservice.location_API.place.service.IStatDataService;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +32,7 @@ public class StatDataController {
     }
     //reemplazar con la userid del authenticacion principal
     @PostMapping("save/{placeId}" )
-    public ResponseEntity<ApiResponse<Long>> saveStatDataForms(@RequestBody StatDataDTO statDataDTO, @PathVariable String placeId, @AuthenticationPrincipal Jwt token) {
+    public ResponseEntity<ApiResponse<Long>> saveStatDataForms(@RequestBody @Valid StatDataDTO statDataDTO, @PathVariable String placeId, @AuthenticationPrincipal Jwt token) {
         String userId = token.getClaims().get("userId").toString();
         log.info("User ID from token: {}", userId);
         log.info("Received StatDataDTO: {}", statDataDTO);

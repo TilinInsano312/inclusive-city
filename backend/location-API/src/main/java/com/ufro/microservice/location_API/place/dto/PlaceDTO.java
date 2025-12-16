@@ -1,15 +1,22 @@
 package com.ufro.microservice.location_API.place.dto;
 
 import com.ufro.microservice.location_API.place.model.StatData;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class PlaceDTO {
+    @NotNull(message = "Cannot be null")
+    @NotBlank(message = "Cannot be blank")
     private String placeId;
+    @NotNull(message = "Cannot be null")
     private List<String> medals;
+    @NotNull(message = "Cannot be null")
     private float rating;
+    @NotNull(message = "Cannot be null")
     private Map<String,StatDataDTO> statsData;
 
     public PlaceDTO(String placeId, List<String> medals, float rating, Map<String, StatDataDTO> statsData) {

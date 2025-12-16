@@ -1,14 +1,24 @@
 package com.ufro.microservice.location_API.place.dto;
 
 import com.ufro.microservice.location_API.common.dto.LocationDTO;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
 public class PlaceSearchDTO {
+    @NotNull(message = "Cannot be null")
+    @NotBlank(message = "Cannot be blank")
     private String placeId;
+    @NotNull(message = "Cannot be null")
     private String name;
+    @NotNull(message = "Cannot be null")
+    @NotBlank(message = "Cannot be blank")
     private String address;
+    @NotNull(message = "Cannot be null")
+    @NotBlank(message = "Cannot be blank")
     private LocationDTO coordinate;
+    @NotNull(message = "Cannot be null")
     private List<String> photos;
 
     public PlaceSearchDTO(String placeId, String name, String address, LocationDTO coordinate, List<String> photos) {

@@ -1,13 +1,24 @@
 package com.ufro.microservice.location_API.incidence.dto;
 
 import com.ufro.microservice.location_API.common.dto.LocationDTO;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 
 public class IncidenceRequestDTO {
+    @NotNull(message = "Cannot be null")
+    @NotBlank(message = "Cannot be blank")
     private String placeId;
+    @NotNull(message = "Cannot be null")
+    @NotBlank(message = "Cannot be blank")
     private LocationDTO location;
+    @NotNull(message = "Cannot be null")
+    @NotBlank(message = "Cannot be blank")
     private String incidence;
+    @NotNull(message = "Cannot be null")
+    @NotBlank(message = "Cannot be blank")
     private String userId;
+    @NotNull(message = "Cannot be null")
     private String image;
 
     public IncidenceRequestDTO(String placeId, LocationDTO location, String incidence, String userId, String image) {

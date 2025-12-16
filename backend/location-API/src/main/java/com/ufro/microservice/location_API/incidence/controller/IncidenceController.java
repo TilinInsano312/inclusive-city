@@ -6,6 +6,7 @@ import com.ufro.microservice.location_API.incidence.dto.IncidenceRequestDTO;
 import com.ufro.microservice.location_API.incidence.dto.LocationSectorRequest;
 import com.ufro.microservice.location_API.incidence.service.IIncidenceService;
 import com.ufro.microservice.location_API.incidence.service.impl.IncidenceService;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +24,7 @@ public class IncidenceController {
     }
 
     @PostMapping("/insert" )
-    public ResponseEntity<ApiResponse<IncidenceDTO>> insertAIncidence(@RequestBody IncidenceRequestDTO incidenceRequestDTO) {
+    public ResponseEntity<ApiResponse<IncidenceDTO>> insertAIncidence(@RequestBody @Valid IncidenceRequestDTO incidenceRequestDTO) {
         return ResponseEntity.status(201).body(new ApiResponse<>(incidenceService.insertAIncidence(incidenceRequestDTO)));
     }
 

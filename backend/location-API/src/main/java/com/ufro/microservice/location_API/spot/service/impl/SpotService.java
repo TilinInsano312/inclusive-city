@@ -2,6 +2,7 @@ package com.ufro.microservice.location_API.spot.service.impl;
 
 import com.ufro.microservice.location_API.common.dto.LocationDTO;
 import com.ufro.microservice.location_API.common.mapper.ILocationMapper;
+import com.ufro.microservice.location_API.exception.NotFoundException;
 import com.ufro.microservice.location_API.spot.dto.CustomSpotDTO;
 import com.ufro.microservice.location_API.spot.dto.SaveCustomSpotDTO;
 import com.ufro.microservice.location_API.spot.dto.SpotDTO;
@@ -41,6 +42,10 @@ public class SpotService implements ISpotService {
 
     @Override
     public List<SpotDTO> getAllSpotsById(String idUser) {
+        if (idUser == null || idUser.isEmpty()) {
+            log.warn("getAllSpotsById called with null or empty idUser");
+            throw new NotFoundException("User Not Found");
+        }
         return spotRepository.findByUserId(idUser)
                 .stream()
                 .map(spotMapper::toDTOSpot)
