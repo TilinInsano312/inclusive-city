@@ -7,4 +7,5 @@ public interface IAuthService {
     LoginResponseDTO loginUser(UserLoginDTO userLoginDTO);
     long resetPassword(ResetPasswordRequestDTO resetPasswordDTO);
     EmailDTO sendResetEmail(EmailDTO emailRequestDTO);
+    boolean verifyCode(VerifyCodeRequest verifyCodeRequest);
 }

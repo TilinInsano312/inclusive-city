@@ -7,11 +7,15 @@ import com.ufro.microservice.authentication_service.mapper.IUserMapper;
 import com.ufro.microservice.authentication_service.model.User;
 import com.ufro.microservice.authentication_service.repository.IUserCrendentialRepository;
 import com.ufro.microservice.authentication_service.service.IAuthService;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class AuthService implements IAuthService {
@@ -21,14 +25,18 @@ public class AuthService implements IAuthService {
     private final JwtUtils jwtUtils;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+    private final EmailService emailService;
+    private StringRedisTemplate redisTemplate; // Cliente de Redis
 
 
-    public AuthService(IUserCrendentialRepository userCrendentialRepository, IUserMapper userMapper, JwtUtils jwtUtils, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager) {
+    public AuthService(IUserCrendentialRepository userCrendentialRepository, IUserMapper userMapper, JwtUtils jwtUtils, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, EmailService emailService, StringRedisTemplate redisTemplate) {
         this.userCrendentialRepository = userCrendentialRepository;
         this.userMapper = userMapper;
         this.jwtUtils = jwtUtils;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
+        this.emailService = emailService;
+        this.redisTemplate = redisTemplate;
     }
 
     @Override
@@ -55,6 +63,7 @@ public class AuthService implements IAuthService {
     @Override
     public long resetPassword(ResetPasswordRequestDTO resetPasswordDTO) {
         String hashedPassword = passwordEncoder.encode(resetPasswordDTO.getNewPassword());
+        redisTemplate.delete("OTP:" + resetPasswordDTO.getEmail());
         return userCrendentialRepository.updateUserByEmail(
                 resetPasswordDTO.getEmail(),
                 hashedPassword
@@ -66,8 +75,20 @@ public class AuthService implements IAuthService {
         if (!(userCrendentialRepository.existsByEmail(emailRequestDTO.getEmail()))) {
             throw new RegisterConflictException("Email does not exist");
         }
+        // 2. Generar Código
+        String code = String.format("%06d", new Random().nextInt(999999));
+
+        // 3. Guardar en Redis: Clave=Email, Valor=Código, Expiración=15 min
+         redisTemplate.opsForValue().set("OTP:" + emailRequestDTO.getEmail(), code, 15, TimeUnit.MINUTES);
+
+        // 4. Enviar correo
+        emailService.sendEmail(emailRequestDTO.getEmail(), "Tu código", "Código: " + code);
 
         return emailRequestDTO;
+    }
+    public boolean verifyCode(VerifyCodeRequest verifyCodeRequest) {
+        String storedCode = redisTemplate.opsForValue().get("OTP:" + verifyCodeRequest.getEmail());
+        return storedCode != null && storedCode.equals(verifyCodeRequest.getCode());
     }
 
 

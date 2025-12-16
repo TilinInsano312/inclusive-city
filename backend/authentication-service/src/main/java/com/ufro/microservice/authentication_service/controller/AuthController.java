@@ -6,6 +6,7 @@ import com.ufro.microservice.authentication_service.service.IAuthService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,10 +39,19 @@ public class AuthController {
         ApiResponse<Long> response = new ApiResponse<>(result);
         return ResponseEntity.ok(response);
     }
+    @PostMapping("/verify-code")
+    public ResponseEntity<ApiResponse<String>> verifyCode(@RequestParam VerifyCodeRequest verifyCodeRequest) {
+        boolean isValid = authService.verifyCode(verifyCodeRequest);
+        if (isValid) {
+            return ResponseEntity.ok(new ApiResponse<>("Codigo valido"));
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>("Codigo Invalido o expirado"));
+        }
+    }
 
 
     @PostMapping("email/reset-password")
-    public ResponseEntity<ApiResponse<String>> resetPassword(@RequestBody EmailDTO email) {
+    public ResponseEntity<ApiResponse<String>> sendResetPassword(@RequestBody EmailDTO email) {
         ApiResponse<String> response = new ApiResponse<>(authService.sendResetEmail(email).toString());
         return ResponseEntity.ok(response);
     }
