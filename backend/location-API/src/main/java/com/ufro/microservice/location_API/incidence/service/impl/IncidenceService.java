@@ -37,7 +37,7 @@ public class IncidenceService implements IIncidenceService {
                 incidenceRequestDTO.getImage()
         );
         setExpirationDateByIncidence(incidenceDTO);
-        log.info("Expiration date set to: " + incidenceDTO.getExpiresAt());
+        log.info("Expiration date set to: {}", incidenceDTO.getExpiresAt());
         incidenceMapper.convertToDTO(incidenceRepository.insert(incidenceMapper.convertToEntity(incidenceDTO)));
         return incidenceDTO;
     }
@@ -55,10 +55,10 @@ public class IncidenceService implements IIncidenceService {
         Point puntoEsquinaSupIzq = new Point(pointNorthEast.getLongitude(), pointNorthEast.getLatitude());
         Point puntoEsquinaInfDer = new Point(pointSouthWest.getLongitude(), pointSouthWest.getLatitude());
         Box box = new Box(puntoEsquinaSupIzq, puntoEsquinaInfDer);
-        log.info("Searching incidences within box: " + box);
+        log.info("Searching incidences within box: {}", box);
         List<IncidenceDTO> incidencesInBox =
                 incidenceMapper.convertToDTOList(incidenceRepository.findByLocationWithin(box));
-        log.info("Found " + incidencesInBox.size() + " incidences within the box.");
+        log.info("Found {} incidences within the box.", incidencesInBox.size());
         return incidencesInBox;
     }
 
