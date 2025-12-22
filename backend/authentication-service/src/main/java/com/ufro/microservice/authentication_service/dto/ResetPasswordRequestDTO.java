@@ -1,9 +1,12 @@
 package com.ufro.microservice.authentication_service.dto;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public class ResetPasswordRequestDTO {
+    @NotBlank(message = "Cannot be blank")
+    @Email(message = "Must be a valid email address")
     private String email;
     @NotBlank(message = "Cannot be blank")
     @Size(min = 8, message = "Password must be at least 8 characters long")
