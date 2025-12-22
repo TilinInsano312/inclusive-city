@@ -49,7 +49,9 @@ public class SpotController {
     }
 
     @PostMapping("custom-spot/insert")
-    public ResponseEntity<ApiResponse<CustomSpotDTO>> insertACustomSpot(@RequestBody @Valid CustomSpotDTO customSpotDTO) {
+    public ResponseEntity<ApiResponse<CustomSpotDTO>> insertACustomSpot(@RequestBody @Valid CustomSpotDTO customSpotDTO, @AuthenticationPrincipal Jwt token) {
+        String userId = token.getClaims().get("userId").toString();
+        customSpotDTO.setUserId(userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 new ApiResponse<>(
                         this.spotService.insertACustomSpot(customSpotDTO)
