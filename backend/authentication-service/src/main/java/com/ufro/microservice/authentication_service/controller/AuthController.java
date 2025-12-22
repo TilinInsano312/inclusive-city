@@ -39,8 +39,8 @@ public class AuthController {
         ApiResponse<Long> response = new ApiResponse<>(result);
         return ResponseEntity.ok(response);
     }
-    @PostMapping("/verify-code")
-    public ResponseEntity<ApiResponse<String>> verifyCode(@RequestParam VerifyCodeRequest verifyCodeRequest) {
+    @PostMapping("verify-code")
+    public ResponseEntity<ApiResponse<String>> verifyCode(@RequestBody VerifyCodeRequest verifyCodeRequest) {
         boolean isValid = authService.verifyCode(verifyCodeRequest);
         if (isValid) {
             return ResponseEntity.ok(new ApiResponse<>("Codigo valido"));
@@ -52,7 +52,7 @@ public class AuthController {
 
     @PostMapping("email/reset-password")
     public ResponseEntity<ApiResponse<String>> sendResetPassword(@RequestBody EmailDTO email) {
-        ApiResponse<String> response = new ApiResponse<>(authService.sendResetEmail(email).toString());
+        ApiResponse<String> response = new ApiResponse<>(authService.sendResetEmail(email).getEmail());
         return ResponseEntity.ok(response);
     }
 
