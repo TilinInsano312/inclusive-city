@@ -24,6 +24,14 @@ services:
       timeout: 5s
       retries: 5
 
+  inclusive-redis:
+    image: redis:alpine
+    container_name: inclusive-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - microservices-net
+
   # ============================================
   # Eureka Server (Service Discovery)
   # ============================================
@@ -153,7 +161,7 @@ services:
     networks:
       - microservices-net
     volumes:
-      - ./location-API/gcp-credentials.json:/app/gcp-credentials.json:ro
+      - ./gcp-credentials.json:/app/gcp-credentials.json:ro
 
 
 
