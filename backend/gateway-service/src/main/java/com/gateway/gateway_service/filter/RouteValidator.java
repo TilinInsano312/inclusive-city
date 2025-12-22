@@ -13,6 +13,7 @@ public class RouteValidator {
             "/inclusive/api/v1/account/auth/register",
             "/inclusive/api/v1/account/email/reset-password",
             "/inclusive/api/v1/account/reset-password",
+            "/inclusive/api/v1/account/verify-code",
             "/eureka"
     );
     public Predicate<ServerHttpRequest> isSecured = path -> openApiEndpoints
