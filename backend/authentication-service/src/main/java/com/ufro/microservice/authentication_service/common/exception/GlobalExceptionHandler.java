@@ -43,8 +43,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorResponse> handleBadCredentialsException(BadCredentialsException ex){
         ErrorResponse errorResponse = new ErrorResponse(
-                "Bad Credentials: "+
-                ex.getMessage()
+                "Bad Credentials: "+ ex.getMessage()
         );
         return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
     }
