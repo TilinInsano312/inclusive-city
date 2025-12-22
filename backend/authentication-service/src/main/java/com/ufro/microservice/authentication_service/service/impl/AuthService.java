@@ -7,6 +7,8 @@ import com.ufro.microservice.authentication_service.mapper.IUserMapper;
 import com.ufro.microservice.authentication_service.model.User;
 import com.ufro.microservice.authentication_service.repository.IUserCrendentialRepository;
 import com.ufro.microservice.authentication_service.service.IAuthService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class AuthService implements IAuthService {
 
+    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
     private final IUserCrendentialRepository userCrendentialRepository;
     private final IUserMapper userMapper;
     private final JwtUtils jwtUtils;
@@ -77,17 +80,29 @@ public class AuthService implements IAuthService {
         }
         // 2. Generar Código
         String code = String.format("%06d", new Random().nextInt(999999));
+        log.info("redis {}",redisTemplate.getConnectionFactory());
 
         // 3. Guardar en Redis: Clave=Email, Valor=Código, Expiración=15 min
-         redisTemplate.opsForValue().set("OTP:" + emailRequestDTO.getEmail(), code, 15, TimeUnit.MINUTES);
+        try {
+            log.info("Conectando a Redis...");
+            redisTemplate.opsForValue().set("OTP:" + emailRequestDTO.getEmail(), code, 15, TimeUnit.MINUTES);
+            log.info("Conexión a Redis exitosa.");
+            log.info("redis {}",redisTemplate.getConnectionFactory());
+        } catch (Exception e) {
+            log.info("Conexión a Redis fallida. {}", e);
+            log.error("Error al conectar con Redis: {}", e.getMessage());
+            throw new RuntimeException(e);
+        }
 
         // 4. Enviar correo
+        log.info("Enviando correo a {}", emailRequestDTO.getEmail());
         emailService.sendEmail(emailRequestDTO.getEmail(), "Tu código", "Código: " + code);
 
         return emailRequestDTO;
     }
     public boolean verifyCode(VerifyCodeRequest verifyCodeRequest) {
         String storedCode = redisTemplate.opsForValue().get("OTP:" + verifyCodeRequest.getEmail());
+        log.info("Verifying code for {}: storedCode={}, providedCode={}", verifyCodeRequest.getEmail(), storedCode, verifyCodeRequest.getCode());
         return storedCode != null && storedCode.equals(verifyCodeRequest.getCode());
     }
 
