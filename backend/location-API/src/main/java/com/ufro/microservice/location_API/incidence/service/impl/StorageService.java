@@ -23,11 +23,6 @@ public class StorageService {
         this.s3Client = s3Client;
     }
 
-    /**
-     * Sube un archivo a Cloudflare R2.
-     * @param fileName El nombre/key del archivo como se guardará en R2.
-     * @param fileBytes Los bytes del archivo.
-     */
     public String uploadFile(String fileName, byte[] fileBytes) {
         PutObjectRequest objectRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
@@ -43,8 +38,6 @@ public class StorageService {
                 .bucket(bucketName)
                 .key(fileName)
                 .build();
-
-        // Devolvemos el stream para que el controlador lo maneje
         return s3Client.getObject(objectRequest);
     }
 }
