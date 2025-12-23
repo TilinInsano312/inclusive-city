@@ -15,19 +15,13 @@ import java.util.function.Function;
 
 @Component
 public class JwtUtils {
-    private final Long expiration;
     private final SecretKey secretKey;
-    private final SecretKey refreshKey;
     private static final Logger log = LoggerFactory.getLogger(JwtUtils.class);
 
     public JwtUtils(
-            @Value("${jwt.secret}") String secret,
-            @Value("${jwt.secret.refresh}") String refreshSecret,
-            @Value("${jwt.time}") Long expiration
+            @Value("${jwt.secret}") String secret
     ) {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes());
-        this.refreshKey = Keys.hmacShaKeyFor(refreshSecret.getBytes());
-        this.expiration = expiration;
     }
 
     public <T> T getClaim(String token, Function<Claims, T> claimsTFunction) {
