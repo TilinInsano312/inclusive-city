@@ -2,7 +2,6 @@ package com.ufro.microservice.location_API.incidence.service.impl;
 
 import com.ufro.microservice.location_API.common.dto.LocationDTO;
 import com.ufro.microservice.location_API.incidence.dto.IncidenceDTO;
-import com.ufro.microservice.location_API.incidence.dto.IncidenceRequestDTO;
 import com.ufro.microservice.location_API.incidence.mapper.IIncidenceMapper;
 import com.ufro.microservice.location_API.incidence.repository.IIncidenceRepository;
 import com.ufro.microservice.location_API.incidence.service.IIncidenceService;
@@ -27,15 +26,8 @@ public class IncidenceService implements IIncidenceService {
     }
 
     @Override
-    public IncidenceDTO insertAIncidence(IncidenceRequestDTO incidenceRequestDTO) {
-        IncidenceDTO incidenceDTO = new IncidenceDTO(
-                incidenceRequestDTO.getPlaceId(),
-                incidenceRequestDTO.getLocation(),
-                incidenceRequestDTO.getIncidence(),
-                null,
-                incidenceRequestDTO.getUserId(),
-                incidenceRequestDTO.getImage()
-        );
+    public IncidenceDTO insertAIncidence(IncidenceDTO incidenceDTO) {
+
         setExpirationDateByIncidence(incidenceDTO);
         log.info("Expiration date set to: {}", incidenceDTO.getExpiresAt());
         incidenceMapper.convertToDTO(incidenceRepository.insert(incidenceMapper.convertToEntity(incidenceDTO)));
@@ -61,7 +53,7 @@ public class IncidenceService implements IIncidenceService {
         log.info("Found {} incidences within the box.", incidencesInBox.size());
         return incidencesInBox;
     }
-
+    //Todo: @berAxz Agregar mas tipos de incidencias y sus tiempos de expiracion
     private void setExpirationDateByIncidence(IncidenceDTO incidenceDTO) {
         Instant ahora = Instant.now();
         Instant fechaExpiracion;
