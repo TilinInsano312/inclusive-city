@@ -10,22 +10,16 @@ public class IncidenceRequestDTO {
     @NotBlank(message = "Cannot be blank")
     private String placeId;
     @NotNull(message = "Cannot be null")
-    @NotBlank(message = "Cannot be blank")
     private LocationDTO location;
     @NotNull(message = "Cannot be null")
     @NotBlank(message = "Cannot be blank")
     private String incidence;
-    @NotNull(message = "Cannot be null")
-    @NotBlank(message = "Cannot be blank")
-    private String userId;
-    @NotNull(message = "Cannot be null")
     private String image;
 
-    public IncidenceRequestDTO(String placeId, LocationDTO location, String incidence, String userId, String image) {
+    public IncidenceRequestDTO(String placeId, LocationDTO location, String incidence, String image) {
         this.placeId = placeId;
         this.location = location;
         this.incidence = incidence;
-        this.userId = userId;
         this.image = image;
     }
 
@@ -51,14 +45,6 @@ public class IncidenceRequestDTO {
 
     public void setIncidence(String incidence) {
         this.incidence = incidence;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
     }
 
     public String getImage() {
