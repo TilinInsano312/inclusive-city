@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:inclusivecity_frontend/core/auth/auth_service.dart';
-import 'package:inclusivecity_frontend/features/map/presentation/bloc/place_bloc.dart';
-import 'package:inclusivecity_frontend/features/map/presentation/bloc/spots_bloc.dart';
-import 'package:inclusivecity_frontend/features/map/presentation/pages/map_screen.dart';
+import 'package:inclusivecity_frontend/features/places/presentation/bloc/place_bloc.dart';
+import 'package:inclusivecity_frontend/features/spots/presentation/bloc/spots_bloc.dart';
+import 'package:inclusivecity_frontend/features/map_viewer/presentation/pages/map_screen.dart';
 import 'package:inclusivecity_frontend/injection_container.dart' as di;
 
 Future<void> main() async {
