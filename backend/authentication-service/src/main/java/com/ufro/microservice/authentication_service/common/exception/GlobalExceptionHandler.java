@@ -1,6 +1,9 @@
 package com.ufro.microservice.authentication_service.common.exception;
 
+import com.ufro.microservice.authentication_service.exceptions.AuthFilterException;
+import com.ufro.microservice.authentication_service.exceptions.ForbiddenException;
 import com.ufro.microservice.authentication_service.exceptions.RegisterConflictException;
+import jakarta.ws.rs.NotAuthorizedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -9,7 +12,8 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ControllerAdvice public class GlobalExceptionHandler
+@ControllerAdvice
+public class GlobalExceptionHandler
 {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex)
@@ -44,6 +48,27 @@ import org.springframework.web.bind.annotation.ResponseStatus;
     public ResponseEntity<ErrorResponse> handleBadCredentialsException(BadCredentialsException ex){
         ErrorResponse errorResponse = new ErrorResponse(
                 "Bad Credentials: "+ ex.getMessage()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
+    }
+    @ExceptionHandler(NotAuthorizedException.class)
+    public ResponseEntity<ErrorResponse> handleNotAuthorizedException(NotAuthorizedException ex){
+        ErrorResponse errorResponse = new ErrorResponse(
+                "Not Authorized: "+ ex.getMessage()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
+    }
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ErrorResponse> handleForbiddenException(ForbiddenException ex){
+        ErrorResponse errorResponse = new ErrorResponse(
+                "Forbidden: "+ ex.getMessage()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
+    }
+    @ExceptionHandler(AuthFilterException.class)
+    public ResponseEntity<ErrorResponse> handleAuthFilterException(AuthFilterException ex){
+        ErrorResponse errorResponse = new ErrorResponse(
+                "Authentication Filter Error: "+ ex.getMessage()
         );
         return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
     }
