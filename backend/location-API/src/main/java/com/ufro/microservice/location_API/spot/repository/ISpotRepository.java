@@ -12,5 +12,7 @@ import java.util.List;
 @Repository
 public interface ISpotRepository extends MongoRepository<Spot, String> {
     List<Spot> findByUserId(String userId);
+    boolean existsByUserId(String userId);
+    boolean existsSpotByUserIdAndSpotName(String userId, String spotName);
     long deleteSpotByLocationAndUserId(Location location, String userId);
 }
