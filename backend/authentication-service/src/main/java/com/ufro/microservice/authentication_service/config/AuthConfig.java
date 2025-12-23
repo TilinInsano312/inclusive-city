@@ -31,8 +31,8 @@ public class AuthConfig {
         return httpSecurity
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "inclusive/api/v1/account/auth/register", "inclusive/api/v1/account/auth/login", "/inclusive/api/v1/email/reset-password", "/inclusive/api/v1/verify-code").permitAll()
-                        .requestMatchers(HttpMethod.PATCH, "/inclusive/api/v1/account/reset-password").permitAll()
+                        .requestMatchers(HttpMethod.POST, "inclusive/api/v1/account/auth/register", "inclusive/api/v1/account/auth/login", "inclusive/api/v1/email/reset-password", "inclusive/api/v1/verify-code").permitAll()
+                        .requestMatchers(HttpMethod.PATCH, "inclusive/api/v1/account/reset-password").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
