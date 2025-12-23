@@ -4,6 +4,7 @@ import com.google.maps.GeoApiContext;
 import com.google.maps.PhotoRequest;
 import com.google.maps.PlaceDetailsRequest;
 import com.google.maps.PlacesApi;
+import com.google.maps.model.LatLng;
 import com.google.maps.model.PlaceDetails;
 import com.google.maps.model.PlacesSearchResponse;
 import com.ufro.microservice.location_API.common.dto.LocationDTO;
@@ -11,9 +12,6 @@ import com.ufro.microservice.location_API.place.dto.PhotoDTO;
 import com.ufro.microservice.location_API.place.dto.PlaceDetailDTO;
 import com.ufro.microservice.location_API.place.dto.PlaceDetailResponseDTO;
 import com.ufro.microservice.location_API.place.dto.PlaceSearchResponseDTO;
-import com.ufro.microservice.location_API.place.mapper.IPlaceMapper;
-import com.ufro.microservice.location_API.place.model.Place;
-import com.ufro.microservice.location_API.place.model.StatData;
 import com.ufro.microservice.location_API.place.repository.IPlaceRepository;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -25,13 +23,11 @@ import java.util.stream.Collectors;
 public class PlacesService implements IPlaceService{
 
     private final GeoApiContext geoApiContext;
-    private final IPlaceMapper placeMapper;
     private final IPlaceRepository placeRepository;
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(PlacesService.class);
 
-    public PlacesService(GeoApiContext geoApiContext, IPlaceMapper placeMapper, IPlaceRepository placeRepository) {
+    public PlacesService(GeoApiContext geoApiContext, IPlaceRepository placeRepository) {
         this.geoApiContext = geoApiContext;
-        this.placeMapper = placeMapper;
         this.placeRepository = placeRepository;
     }
 
@@ -66,7 +62,7 @@ public class PlacesService implements IPlaceService{
     @Override
     public List<PlaceSearchResponseDTO> getPlaceBySearch(String query) {
         try {
-            PlacesSearchResponse respuestaGoogle = PlacesApi.textSearchQuery(geoApiContext, query).region("cl").language("es")
+            PlacesSearchResponse respuestaGoogle = PlacesApi.textSearchQuery(geoApiContext, query).region("cl").language("es").location(new LatLng(-38.740694, -72.602875)).radius(20000)
                     .await();
             return Arrays.stream(respuestaGoogle.results).map(lugar -> {
                 LocationDTO coords = new LocationDTO(
@@ -109,7 +105,7 @@ public class PlacesService implements IPlaceService{
             PhotoRequest photoRequest = PlacesApi.photo(geoApiContext, photoReference);
             return new PhotoDTO(photoRequest.maxWidth(maxWidth).await().imageData, "image/jpeg");
         } catch (Exception e) {
-            throw new RuntimeException("Error al obtener la foto: " + e.getMessage(), e);
+            throw new RuntimeException("Error al obtener la foto: " + e.getMessage());
         }
     }
 
