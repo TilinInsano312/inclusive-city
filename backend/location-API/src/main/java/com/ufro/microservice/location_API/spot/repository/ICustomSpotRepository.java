@@ -15,6 +15,8 @@ import java.util.List;
 public interface ICustomSpotRepository extends MongoRepository<CustomSpot, String> {
     List<CustomSpot> findByUserId(String userId);
     CustomSpot findCustomSpotByUserIdAndListName(String userId, String listName);
+    boolean existsCustomSpotByUserIdAndListName(String userId, String listName);
+    boolean existsByUserId(String userId);
     long deleteCustomSpotByListNameAndUserId(String listName, String userId);
 
     @Query("{ 'listName': ?0,'userId': ?1}")
