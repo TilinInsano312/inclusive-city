@@ -1,14 +1,8 @@
 package com.ufro.microservice.location_API.common.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-
+//Todo: @berAxz revisar las validaciones de location que esta rara la validacion de @NotBlank
 public class LocationDTO {
-    @NotNull(message = "Cannot be null")
-    @NotBlank(message = "Cannot be blank")
     private double longitude;
-    @NotBlank(message = "Cannot be blank")
-    @NotNull(message = "Cannot be null")
     private double latitude;
 
     public LocationDTO(double longitude, double latitude) {

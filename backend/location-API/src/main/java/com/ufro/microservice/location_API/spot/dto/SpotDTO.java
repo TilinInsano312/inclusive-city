@@ -18,7 +18,6 @@ public record SpotDTO(@NotNull(message = "Cannot be null")
                       @NotBlank(message = "Cannot be blank")
                       String address,
                       @NotNull(message = "Cannot be null")
-                      @NotBlank(message = "Cannot be blank")
                       LocationDTO location,
                       @NotNull(message = "Cannot be null")
                       @NotBlank(message = "Cannot be blank")

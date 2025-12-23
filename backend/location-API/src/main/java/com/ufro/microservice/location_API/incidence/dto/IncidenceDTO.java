@@ -11,7 +11,6 @@ public class IncidenceDTO {
     @NotBlank(message = "Cannot be blank")
     private String placeId;
     @NotNull(message = "Cannot be null")
-    @NotBlank(message = "Cannot be blank")
     private LocationDTO location;
     @NotNull(message = "Cannot be null")
     @NotBlank(message = "Cannot be blank")

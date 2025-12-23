@@ -1,10 +1,7 @@
 package com.ufro.microservice.location_API.place.dto;
 
-import com.ufro.microservice.location_API.place.model.StatData;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
