@@ -1,6 +1,5 @@
 package com.ufro.microservice.location_API.spot.dto;
 
-import com.ufro.microservice.location_API.spot.model.Spot;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -14,9 +13,9 @@ public class CustomSpotDTO {
     @NotBlank(message = "Cannot be blank")
     private String userId;
     @NotNull(message = "Cannot be null")
-    private List<Spot> spots;
+    private List<SpotDTO> spots;
 
-    public CustomSpotDTO(String listName, String userId, List<Spot> spots) {
+    public CustomSpotDTO(String listName, String userId, List<SpotDTO> spots) {
         this.listName = listName;
         this.userId = userId;
         this.spots = spots;
@@ -38,11 +37,11 @@ public class CustomSpotDTO {
         this.userId = userId;
     }
 
-    public List<Spot> getSpots() {
+    public List<SpotDTO> getSpots() {
         return spots;
     }
 
-    public void setSpots(List<Spot> spots) {
+    public void setSpots(List<SpotDTO> spots) {
         this.spots = spots;
     }
 }
