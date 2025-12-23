@@ -7,5 +7,4 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring")
 public interface IStatDataMapper {
     StatData toStatData(StatDataDTO statData);
-    StatDataDTO toStatDataDTO(StatData statData);
 }
