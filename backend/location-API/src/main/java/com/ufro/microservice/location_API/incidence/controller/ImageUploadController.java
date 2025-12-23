@@ -6,7 +6,6 @@ import com.ufro.microservice.location_API.incidence.service.impl.ImageConversion
 import com.ufro.microservice.location_API.incidence.service.impl.StorageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,10 +15,11 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("inclusive/api/v1/incidence/image")
+@RequestMapping("inclusive/api/v1/location/incidence/image")
 public class ImageUploadController {
 
     private static final Logger log = LoggerFactory.getLogger(ImageUploadController.class);
@@ -33,7 +33,7 @@ public class ImageUploadController {
         this.safeSearchService = safeSearchService;
     }
 
-    @PostMapping("/upload") //to do: refactor
+    @PostMapping("/upload")
     public ResponseEntity<ApiResponse<String>> uploadImage(@RequestParam("file") MultipartFile file) {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body(new ApiResponse<>("El archivo está vacío."));
@@ -50,10 +50,10 @@ public class ImageUploadController {
             String finalFileName = UUID.randomUUID().toString() + ".jpg";
             log.info("Uploading image with filename: {}", finalFileName);
             return ResponseEntity.ok(new ApiResponse<>(storageService.uploadFile(finalFileName, compressedImageBytes)) );
-        } catch (Exception e) {
+        } catch (IOException e) {
             log.info("Exception message: {}", e.getMessage());
             throw new ResponseStatusException(
-                    HttpStatus.INTERNAL_SERVER_ERROR, "Error al procesar el archivo.", e);
+                    HttpStatus.I_AM_A_TEAPOT, "Error al procesar el archivo.", e);
         }
     }
 }

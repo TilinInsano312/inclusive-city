@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("inclusive/api/v1/incidence")
+@RequestMapping("inclusive/api/v1/location/incidence")
 public class IncidenceController {
     private static final Logger log = LoggerFactory.getLogger(IncidenceController.class);
     private final IIncidenceService incidenceService;
@@ -25,11 +25,19 @@ public class IncidenceController {
         this.incidenceService = incidenceService;
     }
 
+    //Todo: @berAxz Revisar si la creacion de ...RequestDTO a ...DTO va en el controller o en el service
     @PostMapping("/insert" )
     public ResponseEntity<ApiResponse<IncidenceDTO>> insertAIncidence(@RequestBody @Valid IncidenceRequestDTO incidenceRequestDTO, @AuthenticationPrincipal Jwt token) {
         String userId = token.getClaims().get("userId").toString();
-        incidenceRequestDTO.setUserId(userId);
-        return ResponseEntity.status(201).body(new ApiResponse<>(incidenceService.insertAIncidence(incidenceRequestDTO)));
+        IncidenceDTO incidenceDTO = new IncidenceDTO(
+                incidenceRequestDTO.getPlaceId(),
+                incidenceRequestDTO.getLocation(),
+                incidenceRequestDTO.getIncidence(),
+                null,
+                userId,
+                incidenceRequestDTO.getImage()
+        );
+        return ResponseEntity.status(201).body(new ApiResponse<>(incidenceService.insertAIncidence(incidenceDTO)));
     }
 
     @GetMapping("/all" )
