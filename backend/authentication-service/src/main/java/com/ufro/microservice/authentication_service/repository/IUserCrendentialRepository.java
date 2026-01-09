@@ -9,6 +9,7 @@ import java.util.Optional;
 
 public interface IUserCrendentialRepository extends MongoRepository<User, String> {
     Optional<User> findByEmail(String email);
+    Optional<User> findByFirebaseUid(String firebaseUid);
     Optional<User> findById(String id);
     boolean existsByEmail (String email);
     @Query("{'email': ?0}")
