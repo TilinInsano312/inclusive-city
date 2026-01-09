@@ -1,21 +1,24 @@
 package com.gateway.gateway_service.filter;
 
-import com.gateway.gateway_service.service.JwtUtils;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.auth.FirebaseToken;
 import org.apache.http.HttpHeaders;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 
 @Component
 public class AuthenticationFilter extends AbstractGatewayFilterFactory<AuthenticationFilter.Config> {
 
+    private static final Logger log = LoggerFactory.getLogger(AuthenticationFilter.class);
     @Autowired
     private RouteValidator routeValidator;
-
-    @Autowired
-    private JwtUtils jwtUtils;
-
 
     public AuthenticationFilter() {
         super(Config.class);
@@ -25,27 +28,38 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
             if (routeValidator.isSecured.test(exchange.getRequest())) {
-                // Here you can add logic to check for authentication tokens, etc.
-                // For example, you might want to check for a JWT token in the Authorization header.
                 if (!exchange.getRequest().getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
-                    exchange.getResponse().setStatusCode(org.springframework.http.HttpStatus.UNAUTHORIZED);
+                    log.error("Missing authorization header");
+                    exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
                     return exchange.getResponse().setComplete();
                 }
                 String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-                if (authHeader != null || authHeader.startsWith("Bearer ")) {
+                if (authHeader != null && authHeader.startsWith("Bearer ")) {
                     authHeader = authHeader.substring(7);
+                } else {
+                    log.error("Invalid authorization header format");
+                    exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+                    return exchange.getResponse().setComplete();
                 }
                 try {
-                    if (!jwtUtils.isTokenValid(authHeader)) {
-                        exchange.getResponse().setStatusCode(org.springframework.http.HttpStatus.UNAUTHORIZED);
-                        return exchange.getResponse().setComplete();
-                    }
+                    FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(authHeader);
+                    ServerHttpRequest request = exchange.getRequest()
+                            .mutate()
+                            .build();
+
+                    return chain.filter(exchange.mutate().request(request).build());
+
+                } catch (FirebaseAuthException e) {
+                    log.error("Firebase Authentication failed: {}", e.getMessage());
+                    exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+                    return exchange.getResponse().setComplete();
                 } catch (Exception e) {
-                    exchange.getResponse().setStatusCode(org.springframework.http.HttpStatus.UNAUTHORIZED);
+                    log.error("Unexpected error in authentication: {}", e.getMessage());
+                    exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
                     return exchange.getResponse().setComplete();
                 }
             }
-            // Implement authentication logic here
+
             return chain.filter(exchange);
         };
     }
