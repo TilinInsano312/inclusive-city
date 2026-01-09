@@ -82,6 +82,8 @@ services:
         condition: service_healthy
     networks:
       - microservices-net
+    volumes:
+      - ./inclusive-dcd0c-firebase-adminsdk-fbsvc-ba85d8ad49.json:/app/inclusive-dcd0c-firebase-adminsdk-fbsvc-ba85d8ad49.json:ro
 
 #  # ============================================
 #  # Account API
