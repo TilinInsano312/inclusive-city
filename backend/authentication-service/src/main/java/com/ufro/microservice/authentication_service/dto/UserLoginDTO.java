@@ -8,13 +8,9 @@ public class UserLoginDTO {
     @NotBlank(message = "Cannot be blank")
     @Email
     private String email;
-    @NotBlank(message = "Cannot be blank")
-    @Size(min = 8, message = "Password must be at least 8 characters long")
-    private String password;
 
-    public UserLoginDTO(String username, String password) {
+    public UserLoginDTO(String username) {
         this.email = username;
-        this.password = password;
     }
 
     public String getEmail() {
@@ -25,11 +21,4 @@ public class UserLoginDTO {
         this.email = username;
     }
 
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
 }

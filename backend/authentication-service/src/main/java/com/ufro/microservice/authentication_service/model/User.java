@@ -15,16 +15,17 @@ import java.util.Set;
 public class User implements UserDetails {
     @MongoId
     private String id;
+    private String firebaseUid;
     private String username;
     private String password;
-    @Indexed(unique = true)
     private String email;
 
-    public User(String id, String username, String email, String password) {
+    public User(String id, String firebaseUid, String username, String password, String email) {
         this.id = id;
+        this.firebaseUid = firebaseUid;
         this.username = username;
-        this.email = email;
         this.password = password;
+        this.email = email;
     }
 
     public User() {
@@ -37,6 +38,9 @@ public class User implements UserDetails {
     public void setId(String id) {
         this.id = id;
     }
+
+    public String getFirebaseUid() { return firebaseUid; }
+    public void setFirebaseUid(String firebaseUid) { this.firebaseUid = firebaseUid; }
 
     public String getUsername() { //Obtiene el email como validacion del @AuthenticationPrincipal
         return username;
