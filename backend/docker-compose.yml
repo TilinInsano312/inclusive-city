@@ -164,6 +164,7 @@ services:
       - microservices-net
     volumes:
       - ./gcp-credentials.json:/app/gcp-credentials.json:ro
+      - ./inclusive-dcd0c-firebase-adminsdk-fbsvc-ba85d8ad49.json:/app/inclusive-dcd0c-firebase-adminsdk-fbsvc-ba85d8ad49.json:ro
 
 
 
@@ -195,6 +196,8 @@ services:
         condition: service_started
     networks:
       - microservices-net
+    volumes:
+      - ./inclusive-dcd0c-firebase-adminsdk-fbsvc-ba85d8ad49.json:/app/inclusive-dcd0c-firebase-adminsdk-fbsvc-ba85d8ad49.json:ro
 
 # ============================================
 # Networks
