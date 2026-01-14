@@ -1,5 +1,6 @@
 package com.ufro.microservice.location_API.incidence.controller;
 
+import com.google.firebase.auth.FirebaseToken;
 import com.ufro.microservice.location_API.common.response.ApiResponse;
 import com.ufro.microservice.location_API.incidence.dto.IncidenceDTO;
 import com.ufro.microservice.location_API.incidence.dto.IncidenceRequestDTO;
@@ -11,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,8 +27,8 @@ public class IncidenceController {
 
     //Todo: @berAxz Revisar si la creacion de ...RequestDTO a ...DTO va en el controller o en el service
     @PostMapping("/insert" )
-    public ResponseEntity<ApiResponse<IncidenceDTO>> insertAIncidence(@RequestBody @Valid IncidenceRequestDTO incidenceRequestDTO, @AuthenticationPrincipal Jwt token) {
-        String userId = token.getClaims().get("userId").toString();
+    public ResponseEntity<ApiResponse<IncidenceDTO>> insertAIncidence(@RequestBody @Valid IncidenceRequestDTO incidenceRequestDTO, @AuthenticationPrincipal FirebaseToken firebaseToken) {
+        String userId = firebaseToken.getUid();
         IncidenceDTO incidenceDTO = new IncidenceDTO(
                 incidenceRequestDTO.getPlaceId(),
                 incidenceRequestDTO.getLocation(),

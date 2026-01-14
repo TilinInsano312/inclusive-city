@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
+import com.google.firebase.auth.FirebaseToken;
 import org.springframework.web.bind.annotation.*;
 
 @RequestMapping("inclusive/api/v1/location/place/statdata/")
@@ -32,8 +32,8 @@ public class StatDataController {
     }
     //reemplazar con la userid del authenticacion principal
     @PostMapping("save/{placeId}" )
-    public ResponseEntity<ApiResponse<Long>> saveStatDataForms(@RequestBody @Valid StatDataDTO statDataDTO, @PathVariable String placeId, @AuthenticationPrincipal Jwt token) {
-        String userId = token.getClaims().get("userId").toString();
+    public ResponseEntity<ApiResponse<Long>> saveStatDataForms(@RequestBody @Valid StatDataDTO statDataDTO, @PathVariable String placeId, @AuthenticationPrincipal FirebaseToken firebaseToken) {
+        String userId = firebaseToken.getUid();
         log.info("User ID from token: {}", userId);
         log.info("Received StatDataDTO: {}", statDataDTO);
         return ResponseEntity.status(201).body(
