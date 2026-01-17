@@ -3,6 +3,7 @@ package com.ufro.microservice.authentication_service.controller;
 import com.google.firebase.auth.FirebaseToken;
 import com.ufro.microservice.authentication_service.common.response.ApiResponse;
 import com.ufro.microservice.authentication_service.dto.*;
+import com.ufro.microservice.authentication_service.model.User;
 import com.ufro.microservice.authentication_service.service.IAuthService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -27,7 +28,7 @@ public class AuthController {
     }
 
     @PostMapping("auth/login")
-    public ResponseEntity<ApiResponse<LoginResponseDTO>> loginUser(@AuthenticationPrincipal FirebaseToken firebaseToken) {
+    public ResponseEntity<ApiResponse<LoginResponseDTO>> loginUser(@AuthenticationPrincipal User firebaseToken) {
         log.info("Login attempt for user: {}", firebaseToken.getEmail());
         LoginResponseDTO loginResponseDTO = authService.loginUser(firebaseToken.getEmail());
         log.info("User details: {}", loginResponseDTO);
