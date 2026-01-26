@@ -1,4 +1,4 @@
-package com.ufro.microservice.location_API.config;
+package com.ufro.microservice.location_API.config.google;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;

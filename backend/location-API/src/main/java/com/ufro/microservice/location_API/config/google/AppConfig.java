@@ -1,4 +1,4 @@
-package com.ufro.microservice.location_API.config;
+package com.ufro.microservice.location_API.config.google;
 
 import com.google.maps.GeoApiContext;
 import org.springframework.context.annotation.Bean;

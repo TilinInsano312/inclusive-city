@@ -1,4 +1,4 @@
-package com.ufro.microservice.location_API.config;
+package com.ufro.microservice.location_API.config.firebase;
 
 
 import com.google.auth.oauth2.GoogleCredentials;

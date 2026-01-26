@@ -2,8 +2,6 @@ package com.ufro.microservice.authentication_service.config.jwt;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
-import com.ufro.microservice.authentication_service.model.User;
-import com.ufro.microservice.authentication_service.repository.IUserCrendentialRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,21 +11,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-
 import java.io.IOException;
-import java.util.Optional;
+import java.util.Collections;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
     private static final Logger log = LoggerFactory.getLogger(JwtFilter.class);
-    private final IUserCrendentialRepository userRepository;
-
-    public JwtFilter(IUserCrendentialRepository userRepository) {
-        this.userRepository = userRepository;
+    public JwtFilter() {
     }
 
     @Override
@@ -46,27 +39,20 @@ public class JwtFilter extends OncePerRequestFilter {
         String token = authHeader.substring(7);
 
         try {
-            //Verifica el token con Firebase (Esto valida la firma y expiracion)
             FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(token);
-            String uid = decodedToken.getUid();
-            String email = decodedToken.getEmail();
-            Optional<User> userOptional = userRepository.findByFirebaseUid(uid);
-            if (userOptional.isPresent()) {
-                User user = userOptional.get();
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        user, // Principal (tu objeto usuario)
-                        null, // Credenciales (nulas porque ya validamos el token)
-                        user.getAuthorities() // Roles
-                );
+            String firebaseUid = decodedToken.getUid();
+            // Principal: firebaseUid (String)
+            // Credentials: null
+            // Authorities: Lista vacía (o podrías leer "claims" del token si usas Custom Claims de Firebase)
+            UsernamePasswordAuthenticationToken authentication =
+                    new UsernamePasswordAuthenticationToken(firebaseUid, null, Collections.emptyList());
 
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            } else {
-                log.warn("Usuario autenticado en Firebase pero no encontrado en base de datos: {}", email);
-            }
+            // 4. Inyectamos en el contexto
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
         } catch (Exception e) {
-            log.error("Error validando Firebase Token: {}", e.getMessage());
+            log.error("Token inválido o expirado: {}", e.getMessage());
+            // No seteamos nada en el contexto, Spring retornará 401/403 si la ruta es protegida
         }
 
         filterChain.doFilter(request, response);

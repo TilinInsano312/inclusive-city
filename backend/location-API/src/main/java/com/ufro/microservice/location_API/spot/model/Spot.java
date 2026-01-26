@@ -16,7 +16,6 @@ public class Spot {
     private String id;
     private String userId;
     private String spotName;
-    @Indexed(unique = true)
     private String placeId;
     private String address;
     private Location location;

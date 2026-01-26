@@ -28,9 +28,9 @@ public class AuthController {
     }
 
     @PostMapping("auth/login")
-    public ResponseEntity<ApiResponse<LoginResponseDTO>> loginUser(@AuthenticationPrincipal User firebaseToken) {
-        log.info("Login attempt for user: {}", firebaseToken.getEmail());
-        LoginResponseDTO loginResponseDTO = authService.loginUser(firebaseToken.getEmail());
+    public ResponseEntity<ApiResponse<LoginResponseDTO>> loginUser(@AuthenticationPrincipal String firebaseToken) {
+        log.info("Login attempt for user: {}", firebaseToken);
+        LoginResponseDTO loginResponseDTO = authService.loginUser(firebaseToken);
         log.info("User details: {}", loginResponseDTO);
         ApiResponse<LoginResponseDTO> response = new ApiResponse<>(loginResponseDTO);
         return ResponseEntity.ok(response);

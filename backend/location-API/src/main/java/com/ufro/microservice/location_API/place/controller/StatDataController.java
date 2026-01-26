@@ -32,13 +32,12 @@ public class StatDataController {
     }
     //reemplazar con la userid del authenticacion principal
     @PostMapping("save/{placeId}" )
-    public ResponseEntity<ApiResponse<Long>> saveStatDataForms(@RequestBody @Valid StatDataDTO statDataDTO, @PathVariable String placeId, @AuthenticationPrincipal FirebaseToken firebaseToken) {
-        String userId = firebaseToken.getUid();
-        log.info("User ID from token: {}", userId);
+    public ResponseEntity<ApiResponse<Long>> saveStatDataForms(@RequestBody @Valid StatDataDTO statDataDTO, @PathVariable String placeId, @AuthenticationPrincipal String uid) {
+        log.info("User ID from token: {}", uid);
         log.info("Received StatDataDTO: {}", statDataDTO);
         return ResponseEntity.status(201).body(
                 new ApiResponse<>(
-                        statDataService.addStatDataToPlace(statDataDTO, placeId, userId)
+                        statDataService.addStatDataToPlace(statDataDTO, placeId, uid)
                 )
         );
     }

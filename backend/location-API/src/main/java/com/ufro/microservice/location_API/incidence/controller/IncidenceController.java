@@ -27,14 +27,14 @@ public class IncidenceController {
 
     //Todo: @berAxz Revisar si la creacion de ...RequestDTO a ...DTO va en el controller o en el service
     @PostMapping("/insert" )
-    public ResponseEntity<ApiResponse<IncidenceDTO>> insertAIncidence(@RequestBody @Valid IncidenceRequestDTO incidenceRequestDTO, @AuthenticationPrincipal FirebaseToken firebaseToken) {
-        String userId = firebaseToken.getUid();
+    public ResponseEntity<ApiResponse<IncidenceDTO>> insertAIncidence(@RequestBody @Valid IncidenceRequestDTO incidenceRequestDTO, @AuthenticationPrincipal String uid) {
+
         IncidenceDTO incidenceDTO = new IncidenceDTO(
                 incidenceRequestDTO.getPlaceId(),
                 incidenceRequestDTO.getLocation(),
                 incidenceRequestDTO.getIncidence(),
                 null,
-                userId,
+                uid,
                 incidenceRequestDTO.getImage()
         );
         return ResponseEntity.status(201).body(new ApiResponse<>(incidenceService.insertAIncidence(incidenceDTO)));
