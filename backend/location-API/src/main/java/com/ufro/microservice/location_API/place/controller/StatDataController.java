@@ -1,6 +1,7 @@
 package com.ufro.microservice.location_API.place.controller;
 
 import com.ufro.microservice.location_API.common.response.ApiResponse;
+import com.ufro.microservice.location_API.place.dto.PlaceDTO;
 import com.ufro.microservice.location_API.place.dto.StatDataDTO;
 import com.ufro.microservice.location_API.place.service.IStatDataService;
 import jakarta.validation.Valid;
@@ -10,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.google.firebase.auth.FirebaseToken;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RequestMapping("inclusive/api/v1/location/place/statdata/")
 @RestController
@@ -21,7 +24,6 @@ public class StatDataController {
         this.statDataService = statDataService;
     }
 
-    //Conectar con @AuthenticatedPrincipal para obtener el userId del usuario logeado
     @GetMapping("update/{placeId}" )
     public ResponseEntity<ApiResponse<Long>> updateStatDataRateChoice(@PathVariable String placeId) {
         return ResponseEntity.ok().body(
@@ -30,7 +32,6 @@ public class StatDataController {
                 )
         );
     }
-    //reemplazar con la userid del authenticacion principal
     @PostMapping("save/{placeId}" )
     public ResponseEntity<ApiResponse<Long>> saveStatDataForms(@RequestBody @Valid StatDataDTO statDataDTO, @PathVariable String placeId, @AuthenticationPrincipal String uid) {
         log.info("User ID from token: {}", uid);
@@ -41,4 +42,6 @@ public class StatDataController {
                 )
         );
     }
+
+
 }

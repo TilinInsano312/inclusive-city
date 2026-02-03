@@ -12,6 +12,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private final GatewayHeaderFilter gatewayHeaderFilter;
+
+    public SecurityConfig(GatewayHeaderFilter gatewayHeaderFilter) {
+        this.gatewayHeaderFilter = gatewayHeaderFilter;
+    }
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -19,7 +24,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(new FirebaseAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(gatewayHeaderFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

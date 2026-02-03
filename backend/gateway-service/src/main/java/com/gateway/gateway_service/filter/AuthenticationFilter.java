@@ -27,6 +27,12 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
     @Override
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
+            String path = exchange.getRequest().getURI().getPath();
+            log.info(">>> GATEWAY: Petición entrante a ruta: {}", path);
+
+            // 1. Verificar si la ruta es segura
+            boolean isSecured = routeValidator.isSecured.test(exchange.getRequest());
+            log.info(">>> GATEWAY: ¿Es ruta segura?: {}", isSecured);
             if (routeValidator.isSecured.test(exchange.getRequest())) {
                 if (!exchange.getRequest().getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
                     log.error("Missing authorization header");
@@ -43,8 +49,10 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                 }
                 try {
                     FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(authHeader);
+                    log.info(">>> GATEWAY: Token válido. Inyectando X-User-Uid: {}",decodedToken.getUid() );
                     ServerHttpRequest request = exchange.getRequest()
                             .mutate()
+                            .header("X-User-Uid", decodedToken.getUid())
                             .build();
 
                     return chain.filter(exchange.mutate().request(request).build());

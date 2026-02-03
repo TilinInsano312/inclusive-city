@@ -8,10 +8,8 @@ import com.google.maps.model.LatLng;
 import com.google.maps.model.PlaceDetails;
 import com.google.maps.model.PlacesSearchResponse;
 import com.ufro.microservice.location_API.common.dto.LocationDTO;
-import com.ufro.microservice.location_API.place.dto.PhotoDTO;
-import com.ufro.microservice.location_API.place.dto.PlaceDetailDTO;
-import com.ufro.microservice.location_API.place.dto.PlaceDetailResponseDTO;
-import com.ufro.microservice.location_API.place.dto.PlaceSearchResponseDTO;
+import com.ufro.microservice.location_API.place.dto.*;
+import com.ufro.microservice.location_API.place.mapper.IPlaceMapper;
 import com.ufro.microservice.location_API.place.repository.IPlaceRepository;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -24,11 +22,13 @@ public class PlacesService implements IPlaceService{
 
     private final GeoApiContext geoApiContext;
     private final IPlaceRepository placeRepository;
+    private final IPlaceMapper placeMapper;
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(PlacesService.class);
 
-    public PlacesService(GeoApiContext geoApiContext, IPlaceRepository placeRepository) {
+    public PlacesService(GeoApiContext geoApiContext, IPlaceRepository placeRepository, IPlaceMapper placeMapper) {
         this.geoApiContext = geoApiContext;
         this.placeRepository = placeRepository;
+        this.placeMapper = placeMapper;
     }
 
     //Buscar lugar por placeId
@@ -148,4 +148,12 @@ public class PlacesService implements IPlaceService{
                 );
     }
 
+    // obtener todas las stat data de un usuario revisando los placeid
+    @Override
+    public List<PlaceDTO> getStatDataByUserId(String userId) {
+        return placeRepository.findAll().stream()
+                .filter(place -> place.getStatsData().containsKey(userId))
+                .map(place -> placeMapper.toPlaceDTO(place))
+                .collect(Collectors.toList());
+    }
 }

@@ -9,7 +9,7 @@ import org.springframework.data.mongodb.repository.Update;
 import java.util.List;
 import java.util.Optional;
 
-public interface IPlaceRepository extends MongoRepository<Place, String> {
+public interface IPlaceRepository extends MongoRepository<Place, String>, PlaceRepositoryCustom {
     Optional<Place> findByPlaceId(String placeId);
     boolean existsPlaceByPlaceId (String placeId);
     Place findPlaceByPlaceId(String placeId);

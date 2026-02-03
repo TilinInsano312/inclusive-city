@@ -1,36 +1,29 @@
 package com.ufro.microservice.location_API.place.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-
 import java.util.List;
 
 public class StatDataResultDTO {
-    @NotNull(message = "Cannot be null")
-    @NotBlank(message = "Cannot be blank")
-    private float averageRate;
-    @NotNull(message = "Cannot be null")
-    @NotBlank(message = "Cannot be blank")
-    private List<String> formStatistics;
+    private float rateChoice;
+    private List<String> forms;
 
-    public StatDataResultDTO(float averageRate, List<String> formStatistics) {
-        this.averageRate = averageRate;
-        this.formStatistics = formStatistics;
+    public StatDataResultDTO(float rateChoice, List<String> forms) {
+        this.rateChoice = rateChoice;
+        this.forms = forms;
     }
 
-    public float getAverageRate() {
-        return averageRate;
+    public float getRateChoice() {
+        return rateChoice;
     }
 
-    public void setAverageRate(float averageRate) {
-        this.averageRate = averageRate;
+    public void setRateChoice(float rateChoice) {
+        this.rateChoice = rateChoice;
     }
 
-    public List<String> getFormStatistics() {
-        return formStatistics;
+    public List<String> getForms() {
+        return forms;
     }
 
-    public void setFormStatistics(List<String> formStatistics) {
-        this.formStatistics = formStatistics;
+    public void setForms(List<String> forms) {
+        this.forms = forms;
     }
 }

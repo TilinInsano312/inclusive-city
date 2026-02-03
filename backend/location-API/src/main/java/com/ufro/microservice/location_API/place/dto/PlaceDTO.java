@@ -13,7 +13,6 @@ public class PlaceDTO {
     private List<String> medals;
     @NotNull(message = "Cannot be null")
     private float rating;
-    @NotNull(message = "Cannot be null")
     private Map<String,StatDataDTO> statsData;
 
     public PlaceDTO(String placeId, List<String> medals, float rating, Map<String, StatDataDTO> statsData) {

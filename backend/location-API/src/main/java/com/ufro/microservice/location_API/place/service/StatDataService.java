@@ -27,7 +27,7 @@ public class StatDataService implements IStatDataService {
 
     @Override
     public long updateReview(StatDataResultDTO data, String placeId){
-        return placeRepository.updatePlaceByPlaceId(placeId, data.getFormStatistics(), data.getAverageRate());
+        return placeRepository.updatePlaceByPlaceId(placeId, data.getForms(), data.getRateChoice());
     }
     @Override
     public StatDataResultDTO calculateStatData(String placeId) {
@@ -77,9 +77,10 @@ public class StatDataService implements IStatDataService {
         if(placeRepository.existsPlaceByPlaceId(placeId)){
             log.info("Adding stat data to place with ID: " + placeId + " for user: " + userId);
             PlaceDTO placeDTO = placeMapper.toPlaceDTO(placeRepository.findByPlaceId(placeId).orElseThrow());
-            placeDTO.getStatsData().put(userId, statDataDTO);
+            StatDataDTO statdata= new StatDataDTO(userId, statDataDTO.getRateChoice(), statDataDTO.getForms());
+            placeDTO.getStatsData().put(userId, statdata);
             log.info("Updated stats data for place: " + placeDTO.getStatsData());
-            return placeRepository.updateByPlaceId(placeId, statDataMapper.toStatData(statDataDTO));
+            return placeRepository.updateByPlaceId(placeId, statDataMapper.toStatData(statdata));
         }
         else {
             log.warn("Place with ID: " + placeId + " does not exist. Cannot add stat data.");

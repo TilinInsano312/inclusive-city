@@ -2,6 +2,7 @@ package com.ufro.microservice.location_API.place.controller;
 
 import com.ufro.microservice.location_API.common.response.ApiResponse;
 import com.ufro.microservice.location_API.place.dto.PhotoDTO;
+import com.ufro.microservice.location_API.place.dto.PlaceDTO;
 import com.ufro.microservice.location_API.place.dto.PlaceDetailResponseDTO;
 import com.ufro.microservice.location_API.place.dto.PlaceSearchResponseDTO;
 import com.ufro.microservice.location_API.place.service.IPlaceService;
@@ -9,6 +10,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -40,6 +42,14 @@ public class PlaceController {
         return ResponseEntity.ok().contentType(MediaType.parseMediaType(photoDTO.getContentType()))
                 .cacheControl(CacheControl.maxAge(1, TimeUnit.DAYS)) // Cachear por 1 día
                 .body(photoDTO.getData());
+    }
+    @GetMapping("user")
+    public ResponseEntity<ApiResponse<List<PlaceDTO>>> getStatDataByUserId(@AuthenticationPrincipal String uid) {
+        return ResponseEntity.ok().body(
+                new ApiResponse<>(
+                        placeService.getStatDataByUserId(uid)
+                )
+        );
     }
 
 
