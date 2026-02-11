@@ -1,6 +1,7 @@
 package com.ufro.microservice.route_API.route.service;
 
 import com.ufro.microservice.route_API.route.client.LocationClient;
+import com.ufro.microservice.route_API.route.common.response.ApiResponse;
 import com.ufro.microservice.route_API.route.dto.IncidenceDTO;
 import com.ufro.microservice.route_API.route.dto.RouteResponseDTO;
 import com.ufro.microservice.route_API.route.exception.ExternalServiceException;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -18,7 +20,7 @@ import java.util.Map;
 public class RouteService {
     @Value("${google.maps.api.key:}")
     private String googleApiKey;
-    @Value("${here.api.key:}")
+    @Value("${here.api.key}")
     private String hereApiKey;
     private final RestTemplate restTemplate = new RestTemplate();
     private LocationClient locationClient;
@@ -65,8 +67,8 @@ public class RouteService {
 
         List<Map<String, Object>> incidences = incidencesFromLocation.stream()
                 .map(inc -> Map.<String, Object>of(
-                        "lat", inc.latitude(),
-                        "lng", inc.longitude(),
+                        "lat", inc.locationDTO().getLatitude(),
+                        "lng", inc.locationDTO().getLongitude(),
                         "radius", 200
                 ))
                 .toList();
@@ -161,7 +163,11 @@ public class RouteService {
     }
 
     private List<IncidenceDTO> getIncidences() {
-        return locationClient.getAllIncidences();
+        ApiResponse<List<IncidenceDTO>> response = locationClient.getAllIncidences();
+        if (response != null && response.isStatus()) {
+            return response.getData();
+        }
+        return Collections.emptyList();
     }
 }
 

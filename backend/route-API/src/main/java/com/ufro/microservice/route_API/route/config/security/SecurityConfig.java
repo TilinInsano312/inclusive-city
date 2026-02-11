@@ -1,4 +1,4 @@
-package com.ufro.microservice.location_API.config.security;
+package com.ufro.microservice.route_API.route.config.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

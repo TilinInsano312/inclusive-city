@@ -23,15 +23,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
-  inclusive-redis:
-    image: redis:alpine
-    container_name: inclusive-redis
-    ports:
-      - "6379:6379"
-    networks:
-      - microservices-net
-
   # ============================================
   # Eureka Server (Service Discovery)
   # ============================================
@@ -83,7 +74,7 @@ services:
     networks:
       - microservices-net
     volumes:
-      - ./inclusive-dcd0c-firebase-adminsdk-fbsvc-ba85d8ad49.json:/app/inclusive-dcd0c-firebase-adminsdk-fbsvc-ba85d8ad49.json:ro
+      - ./firebase-service.json:/app/firebase-service.json:ro
 
 #  # ============================================
 #  # Account API
@@ -131,6 +122,8 @@ services:
         condition: service_healthy
     networks:
       - microservices-net
+    volumes:
+      - ./firebase-service.json:/app/firebase-service.json:ro
 
   # ============================================
   # Location API
@@ -164,7 +157,7 @@ services:
       - microservices-net
     volumes:
       - ./gcp-credentials.json:/app/gcp-credentials.json:ro
-      - ./inclusive-dcd0c-firebase-adminsdk-fbsvc-ba85d8ad49.json:/app/inclusive-dcd0c-firebase-adminsdk-fbsvc-ba85d8ad49.json:ro
+      - ./firebase-service.json:/app/firebase-service.json:ro
 
 
 
@@ -197,7 +190,7 @@ services:
     networks:
       - microservices-net
     volumes:
-      - ./inclusive-dcd0c-firebase-adminsdk-fbsvc-ba85d8ad49.json:/app/inclusive-dcd0c-firebase-adminsdk-fbsvc-ba85d8ad49.json:ro
+      - ./firebase-service.json:/app/firebase-service.json:ro
 
 # ============================================
 # Networks
