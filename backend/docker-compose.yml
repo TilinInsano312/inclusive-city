@@ -115,6 +115,7 @@ services:
       - SPRING_PROFILES_ACTIVE=docker
       - SPRING_DATA_MONGODB_URI=${SPRING_DATA_MONGODB_URI}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - ORS_API_KEY=${ORS_API_KEY}
     depends_on:
       eureka-server:
         condition: service_healthy

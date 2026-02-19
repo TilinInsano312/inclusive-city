@@ -7,32 +7,46 @@ import com.ufro.microservice.route_API.route.dto.RouteResponseDTO;
 import com.ufro.microservice.route_API.route.exception.ExternalServiceException;
 import com.ufro.microservice.route_API.route.exception.InvalidCoordinatesException;
 import com.ufro.microservice.route_API.route.exception.RouteNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Service
 public class RouteService {
+    private static final Logger log = LoggerFactory.getLogger(RouteService.class);
+
     @Value("${google.maps.api.key:}")
     private String googleApiKey;
-    @Value("${here.api.key}")
-    private String hereApiKey;
+
+    @Value("${ors.api.key:}")
+    private String orsApiKey;
+
+    @Value("${ors.api.url:https://api.openrouteservice.org/v2/directions/wheelchair}")
+    private String orsApiUrl;
+
     private final RestTemplate restTemplate = new RestTemplate();
-    private LocationClient locationClient;
+    private final LocationClient locationClient;
 
     public RouteService(LocationClient locationClient) {
         this.locationClient = locationClient;
     }
-    // las warning solo son unchecked casts, no afectan el funcionamiento
 
+    @SuppressWarnings("unchecked")
     public RouteResponseDTO getPrincipalRoute(String origin, String destination) {
         String url = String.format(
-                "https://maps.googleapis.com/maps/api/directions/json?origin=%s&destination=%s&alternatives=false&key=%s",
+                "https://maps.googleapis.com/maps/api/directions/json?origin=%s&destination=%s&mode=walking&alternatives=false&key=%s",
                 origin, destination, googleApiKey
         );
 
@@ -50,6 +64,7 @@ public class RouteService {
         return simplifyRoute(routes.getFirst());
     }
 
+    @SuppressWarnings("unchecked")
     public RouteResponseDTO getSecureRoute(String origin, String destination) {
         String[] originCoords = origin.split(",");
         String[] destCoords = destination.split(",");
@@ -64,57 +79,77 @@ public class RouteService {
         double destinationLng = parseCoordinate(destCoords[1], "longitud de destino");
 
         List<IncidenceDTO> incidencesFromLocation = getIncidences();
+        log.info("Total de incidencias obtenidas: {}", incidencesFromLocation.size());
 
-        List<Map<String, Object>> incidences = incidencesFromLocation.stream()
-                .map(inc -> Map.<String, Object>of(
-                        "lat", inc.locationDTO().getLatitude(),
-                        "lng", inc.locationDTO().getLongitude(),
-                        "radius", 200
-                ))
-                .toList();
+        // Construir el cuerpo de la petición para OpenRouteService
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("coordinates", List.of(
+                List.of(originLng, originLat),
+                List.of(destinationLng, destinationLat)
+        ));
 
-        UriComponentsBuilder builder = UriComponentsBuilder
-                .fromUriString("https://router.hereapi.com/v8/routes")
-                .queryParam("origin", originLat + "," + originLng)
-                .queryParam("destination", destinationLat + "," + destinationLng)
-                .queryParam("transportMode", "car")
-                .queryParam("return", "polyline,summary")
-                .queryParam("polylineFormat", "flex")
-                .queryParam("apikey", hereApiKey);
-
-        for (Map<String, Object> inc : incidences) {
-            String area = createAvoidArea(
-                    (double) inc.get("lat"),
-                    (double) inc.get("lng"),
-                    (int) inc.get("radius")
-            );
-            builder.queryParam("avoid[areas]", area);
+        // Construir e inyectar los polígonos de evitación si existen incidencias
+        Map<String, Object> avoidPolygons = buildOrsAvoidPolygons(incidencesFromLocation);
+        if (!avoidPolygons.isEmpty()) {
+            Map<String, Object> options = new HashMap<>();
+            options.put("avoid_polygons", avoidPolygons);
+            requestBody.put("options", options);
+            log.info("Áreas de evitación dinámicas inyectadas en la petición");
         }
 
-        String url = builder.toUriString();
-        Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+        log.info("Enviando petición a OpenRouteService API...");
 
-        if (response == null || !response.containsKey("routes")) {
-            throw new ExternalServiceException("HERE API no devolvió rutas disponibles");
+        // Configurar los headers requeridos por ORS
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization", orsApiKey);
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+
+        try {
+            ResponseEntity<Map> response = restTemplate.postForEntity(orsApiUrl, entity, Map.class);
+            Map<String, Object> responseBody = response.getBody();
+
+            if (responseBody == null || !responseBody.containsKey("routes")) {
+                throw new ExternalServiceException("OpenRouteService API no devolvió rutas disponibles");
+            }
+
+            List<Map<String, Object>> routes = (List<Map<String, Object>>) responseBody.get("routes");
+            if (routes.isEmpty()) {
+                throw new RouteNotFoundException("No se encontró una ruta segura para el trayecto especificado");
+            }
+
+            // ORS siempre devuelve la ruta más óptima considerando los polígonos bloqueados
+            Map<String, Object> bestRoute = routes.getFirst();
+            Map<String, Object> summary = (Map<String, Object>) bestRoute.get("summary");
+
+            double distance = ((Number) summary.get("distance")).doubleValue();
+            double durationSecs = ((Number) summary.get("duration")).doubleValue();
+            String encodedPolyline = (String) bestRoute.get("geometry");
+
+            log.info("Ruta segura calculada - Distancia: {} m, Duración: {} s", distance, durationSecs);
+
+            // Convertir la respuesta a texto legible para el Frontend
+            String distanceText = String.format("%.0f m", distance);
+            if (distance >= 1000) {
+                distanceText = String.format("%.1f km", distance / 1000);
+            }
+
+            long durationSeconds = (long) durationSecs;
+            String durationText = String.format("%d min", durationSeconds / 60);
+            if (durationSeconds < 60) {
+                durationText = String.format("%d seg", durationSeconds);
+            }
+
+            return new RouteResponseDTO(distanceText, durationText, encodedPolyline);
+
+        } catch (ExternalServiceException | RouteNotFoundException e) {
+            // Ya son excepciones personalizadas, simplemente relanzarlas
+            throw e;
+        } catch (Exception e) {
+            log.error("Error inesperado al llamar a OpenRouteService API: {}", e.getMessage(), e);
+            throw new ExternalServiceException("Error al obtener ruta segura: " + e.getMessage());
         }
-
-        List<Map> routes = (List<Map>) response.get("routes");
-        if (routes.isEmpty()) {
-            throw new RouteNotFoundException("No se encontró una ruta segura para el trayecto especificado");
-        }
-
-        Map route = routes.get(0);
-        Map section = ((List<Map>) route.get("sections")).get(0);
-        Map<String, Object> summary = (Map<String, Object>) section.get("summary");
-        Object polylineObj = section.get("polyline");
-
-        String polyline = extractPolyline(polylineObj);
-
-        return new RouteResponseDTO(
-                summary.get("length").toString(),
-                summary.get("duration").toString(),
-                polyline
-        );
     }
 
     private double parseCoordinate(String value, String fieldName) {
@@ -125,36 +160,77 @@ public class RouteService {
         }
     }
 
-    private String extractPolyline(Object polylineObj) {
-        if (polylineObj instanceof String) {
-            return (String) polylineObj;
-        } else if (polylineObj instanceof Map<?, ?> polyMap) {
-            String encoded = (String) polyMap.get("encoded");
-            if (encoded == null) {
-                throw new ExternalServiceException("Formato de polyline sin campo 'encoded'");
-            }
-            return encoded;
-        } else {
-            throw new ExternalServiceException("Formato inesperado de polyline");
+    /**
+     * Construye el objeto MultiPolygon (GeoJSON) requerido por OpenRouteService
+     * para bloquear áreas de incidencias dinámicamente.
+     */
+    private Map<String, Object> buildOrsAvoidPolygons(List<IncidenceDTO> incidences) {
+        Map<String, Object> avoidPolygons = new HashMap<>();
+
+        List<IncidenceDTO> validIncidences = incidences.stream()
+                .filter(inc -> inc.locationDTO() != null)
+                .toList();
+
+        if (validIncidences.isEmpty()) {
+            return avoidPolygons;
         }
+
+        // FIX CRÍTICO: 4 niveles de anidación para un MultiPolygon GeoJSON estricto
+        // Estructura: Lista de Polígonos -> Lista de Anillos -> Lista de Coordenadas -> [lon, lat]
+        List<List<List<List<Double>>>> multiPolygonCoords = new ArrayList<>();
+
+        for (IncidenceDTO inc : validIncidences) {
+            double lat = inc.locationDTO().getLatitude();
+            double lng = inc.locationDTO().getLongitude();
+
+            // 20 metros de radio (40m de diámetro). Suficiente para tapar la calle
+            // y la vereda sin bloquear las calles paralelas.
+            List<List<Double>> polygonCoords = createCircularPolygon(lat, lng, 20);
+
+            // Cada polígono debe tener un anillo exterior (el primer anillo)
+            List<List<List<Double>>> singlePolygonRings = new ArrayList<>();
+            singlePolygonRings.add(polygonCoords);
+
+            // Añadimos el polígono completo al MultiPolygon
+            multiPolygonCoords.add(singlePolygonRings);
+        }
+
+        avoidPolygons.put("type", "MultiPolygon");
+        avoidPolygons.put("coordinates", multiPolygonCoords);
+
+        return avoidPolygons;
     }
 
+    /**
+     * Crea un polígono cerrado alrededor de una coordenada.
+     */
+    private List<List<Double>> createCircularPolygon(double centerLat, double centerLng, int radiusMeters) {
+        List<List<Double>> polygon = new ArrayList<>();
+        int numPoints = 16;
 
-    private String createAvoidArea(double lat, double lng, int radiusMeters) {
-        double degrees = radiusMeters / 111_111.0;
+        double latDegrees = radiusMeters / 111_111.0;
+        double lngDegrees = radiusMeters / (111_111.0 * Math.cos(Math.toRadians(centerLat)));
 
-        double south = lat - degrees;
-        double north = lat + degrees;
-        double west = lng - degrees;
-        double east = lng + degrees;
+        // Generamos los puntos del círculo
+        for (int i = 0; i < numPoints; i++) {
+            double angle = 2 * Math.PI * i / numPoints;
+            double pointLat = centerLat + latDegrees * Math.sin(angle);
+            double pointLng = centerLng + lngDegrees * Math.cos(angle);
 
-        return west + "," + south + ";" + east + "," + north;
+            // ORS requiere la coordenada en formato [Longitud, Latitud]
+            polygon.add(List.of(pointLng, pointLat));
+        }
+
+        // FIX CRÍTICO: Cierre perfecto. El estándar GeoJSON exige que el último
+        // punto sea una copia exacta del primero para "cerrar" el polígono.
+        polygon.add(polygon.getFirst());
+
+        return polygon;
     }
 
-
-    // metodo para simplificar la ruta y dar una respuesta mas simple
+    @SuppressWarnings("unchecked")
     private RouteResponseDTO simplifyRoute(Map<String, Object> ruta) {
-        Map<String, Object> leg = ((List<Map<String, Object>>) ruta.get("legs")).get(0);
+        Map<String, Object> leg = ((List<Map<String, Object>>) ruta.get("legs")).getFirst();
         String distance = ((Map<String, Object>) leg.get("distance")).get("text").toString();
         String duration = ((Map<String, Object>) leg.get("duration")).get("text").toString();
         String polyline = ((Map<String, Object>) ruta.get("overview_polyline")).get("points").toString();
@@ -170,4 +246,3 @@ public class RouteService {
         return Collections.emptyList();
     }
 }
-
