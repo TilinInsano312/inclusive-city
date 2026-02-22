@@ -60,7 +60,7 @@ public class RouteService {
         if (routes == null || routes.isEmpty()) {
             throw new RouteNotFoundException("No se encontró una ruta entre " + origin + " y " + destination);
         }
-
+        log.info("incidencias obtenidas para ruta principal: {}", getIncidences());
         return simplifyRoute(routes.getFirst());
     }
 
@@ -168,8 +168,14 @@ public class RouteService {
         Map<String, Object> avoidPolygons = new HashMap<>();
 
         List<IncidenceDTO> validIncidences = incidences.stream()
-                .filter(inc -> inc.locationDTO() != null)
+                .filter(inc -> inc.getIncidence() != null)
                 .toList();
+        log.info("Incidencias válidas para generar polígonos de evitación: {}", validIncidences.size());
+        log.info("Detalles de incidencias válidas: {}", validIncidences.stream()
+                .map(inc -> String.format("ID: %s, Tipo: %s, Ubicación: (%.6f, %.6f)",
+                        inc.getPlaceId(), inc.getIncidence(),
+                        inc.getLocation().getLatitude(), inc.getLocation().getLongitude()))
+                .toList());
 
         if (validIncidences.isEmpty()) {
             return avoidPolygons;
@@ -180,8 +186,8 @@ public class RouteService {
         List<List<List<List<Double>>>> multiPolygonCoords = new ArrayList<>();
 
         for (IncidenceDTO inc : validIncidences) {
-            double lat = inc.locationDTO().getLatitude();
-            double lng = inc.locationDTO().getLongitude();
+            double lat = inc.getLocation().getLatitude();
+            double lng = inc.getLocation().getLongitude();
 
             // 20 metros de radio (40m de diámetro). Suficiente para tapar la calle
             // y la vereda sin bloquear las calles paralelas.
