@@ -25,11 +25,9 @@
     <modules>
         <module>gateway-service</module>
         <module>eureka-server</module>
-        <module>account-API</module>
         <module>route-API</module>
         <module>location-API</module>
         <module>authentication-service</module>
-
     </modules>
 
     <dependencyManagement>
