@@ -27,7 +27,6 @@ public class IncidenceService implements IIncidenceService {
 
     @Override
     public IncidenceDTO insertAIncidence(IncidenceDTO incidenceDTO) {
-
         setExpirationDateByIncidence(incidenceDTO);
         log.info("Expiration date set to: {}", incidenceDTO.getExpiresAt());
         incidenceMapper.convertToDTO(incidenceRepository.insert(incidenceMapper.convertToEntity(incidenceDTO)));
@@ -53,21 +52,24 @@ public class IncidenceService implements IIncidenceService {
         log.info("Found {} incidences within the box.", incidencesInBox.size());
         return incidencesInBox;
     }
-    //Todo: @berAxz Agregar mas tipos de incidencias y sus tiempos de expiracion
     private void setExpirationDateByIncidence(IncidenceDTO incidenceDTO) {
         Instant ahora = Instant.now();
         Instant fechaExpiracion;
         switch (incidenceDTO.getIncidence()) {
-            case "CALLE_CERRADA":
-                fechaExpiracion = ahora.plus(1, ChronoUnit.DAYS);
+            case "ALUMBRADO_PUBLICO":
+                fechaExpiracion = ahora.plus(30, ChronoUnit.MINUTES);
                 incidenceDTO.setExpiresAt(fechaExpiracion);
                 break;
-            case "VEREDA_ROTA":
-                fechaExpiracion = ahora.plus(3, ChronoUnit.DAYS);
+            case "OBRA", "ESCOMBROS":
+                fechaExpiracion = ahora.plus(45, ChronoUnit.MINUTES);
                 incidenceDTO.setExpiresAt(fechaExpiracion);
                 break;
-            case "ILUMINACION":
-                fechaExpiracion = ahora.plus(12, ChronoUnit.HOURS);
+            case "BLOQUEDO_RUTA", "NO_RAMPA", "RAMPA_DANADA":
+                fechaExpiracion = ahora.plus(1, ChronoUnit.HOURS);
+                incidenceDTO.setExpiresAt(fechaExpiracion);
+                break;
+            case "RAMPA_BLOQUEADA":
+                fechaExpiracion = ahora.plus(15, ChronoUnit.MINUTES);
                 incidenceDTO.setExpiresAt(fechaExpiracion);
                 break;
             default:

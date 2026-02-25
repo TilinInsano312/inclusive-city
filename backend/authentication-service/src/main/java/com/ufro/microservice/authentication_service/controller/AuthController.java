@@ -1,9 +1,7 @@
 package com.ufro.microservice.authentication_service.controller;
 
-import com.google.firebase.auth.FirebaseToken;
 import com.ufro.microservice.authentication_service.common.response.ApiResponse;
 import com.ufro.microservice.authentication_service.dto.*;
-import com.ufro.microservice.authentication_service.model.User;
 import com.ufro.microservice.authentication_service.service.IAuthService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;

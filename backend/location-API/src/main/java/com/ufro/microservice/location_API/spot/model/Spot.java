@@ -2,7 +2,6 @@ package com.ufro.microservice.location_API.spot.model;
 
 import com.ufro.microservice.location_API.common.model.Location;
 import lombok.*;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 

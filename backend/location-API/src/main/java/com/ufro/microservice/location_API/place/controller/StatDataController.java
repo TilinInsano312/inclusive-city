@@ -1,7 +1,6 @@
 package com.ufro.microservice.location_API.place.controller;
 
 import com.ufro.microservice.location_API.common.response.ApiResponse;
-import com.ufro.microservice.location_API.place.dto.PlaceDTO;
 import com.ufro.microservice.location_API.place.dto.StatDataDTO;
 import com.ufro.microservice.location_API.place.service.IStatDataService;
 import jakarta.validation.Valid;
@@ -9,10 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import com.google.firebase.auth.FirebaseToken;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RequestMapping("inclusive/api/v1/location/place/statdata/")
 @RestController

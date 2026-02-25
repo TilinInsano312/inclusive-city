@@ -1,6 +1,5 @@
 package com.ufro.microservice.location_API.incidence.controller;
 
-import com.google.firebase.auth.FirebaseToken;
 import com.ufro.microservice.location_API.common.response.ApiResponse;
 import com.ufro.microservice.location_API.incidence.dto.IncidenceDTO;
 import com.ufro.microservice.location_API.incidence.dto.IncidenceRequestDTO;
