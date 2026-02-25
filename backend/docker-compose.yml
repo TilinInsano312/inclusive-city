@@ -76,29 +76,6 @@ services:
     volumes:
       - ./firebase-service.json:/app/firebase-service.json:ro
 
-#  # ============================================
-#  # Account API
-#  # ============================================
-#  account-api:
-#    build:
-#      context: .
-#      dockerfile: account-API/Dockerfile
-#    container_name: account-api
-#    restart: unless-stopped
-#    ports:
-#      - "8082:8082"
-#    environment:
-#      - SPRING_PROFILES_ACTIVE=docker
-#      - SPRING_DATA_MONGODB_URI=mongodb://${MONGO_ROOT_USER:-admin}:${MONGO_ROOT_PASSWORD:-admin123}@mongodb:27017/accounts?authSource=admin
-#      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
-#    depends_on:
-#      eureka-server:
-#        condition: service_healthy
-#      mongodb:
-#        condition: service_healthy
-#    networks:
-#      - microservices-net
-
   # ============================================
   # Route API
   # ============================================

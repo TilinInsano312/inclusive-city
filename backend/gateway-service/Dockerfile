@@ -1,14 +1,13 @@
-FROM eclipse-temurin:21-jdk-alpine AS builder
+FROM ibm-semeru-runtimes:open-21-jdk-jammy AS builder
 
 WORKDIR /workspace
-RUN apk add --no-cache maven
+RUN apt-get update && apt-get install -y maven && rm -rf /var/lib/apt/lists/*
 
 # CAPA 1: POMs (se cachea si no cambian)
 COPY pom.xml ./
 COPY eureka-server/pom.xml ./eureka-server/
 COPY gateway-service/pom.xml ./gateway-service/
 COPY authentication-service/pom.xml ./authentication-service/
-COPY account-API/pom.xml ./account-API/
 COPY route-API/pom.xml ./route-API/
 COPY location-API/pom.xml ./location-API/
 # CAPA 2: Dependencias (se cachea)
@@ -23,22 +22,18 @@ COPY gateway-service/src ./gateway-service/src
 # ... solo si location-API depende de ellos
 
 # CAPA 4: Build (solo el módulo necesario)
-RUN mvn clean package -pl gateway-service -am -DskipTests
+RUN mvn clean package -T 1C -pl gateway-service -am -DskipTests
 # Stage 2: Runtime (Imagen final ligera)
-FROM eclipse-temurin:21-jre-alpine
+FROM ibm-semeru-runtimes:open-21-jre-jammy
 
 WORKDIR /app
 
 # Crear usuario no-root para seguridad
-RUN addgroup -g 1001 appgroup && \
-    adduser -D -u 1001 -G appgroup appuser
 
 # Copiar el JAR desde el builder
 COPY --from=builder /workspace/gateway-service/target/*.jar app.jar
 # Cambiar permisos
-RUN chown appuser:appgroup app.jar
 # Usar usuario no-root
-USER appuser
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=3s --start-period=60s \
   CMD wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1
