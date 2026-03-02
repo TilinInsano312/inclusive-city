@@ -13,7 +13,6 @@ import java.time.Instant;
 public class Incidence {
     @Id
     private String id;
-    @Indexed(unique = true)
     private String placeId;
     @GeoSpatialIndexed(type = GeoSpatialIndexType.GEO_2DSPHERE)
     private Location location;

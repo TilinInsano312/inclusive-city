@@ -1,6 +1,7 @@
 package com.ufro.microservice.location_API.incidence.service.impl;
 
 import com.ufro.microservice.location_API.common.dto.LocationDTO;
+import com.ufro.microservice.location_API.exception.ConflictException;
 import com.ufro.microservice.location_API.incidence.dto.IncidenceDTO;
 import com.ufro.microservice.location_API.incidence.mapper.IIncidenceMapper;
 import com.ufro.microservice.location_API.incidence.repository.IIncidenceRepository;
@@ -29,6 +30,15 @@ public class IncidenceService implements IIncidenceService {
     public IncidenceDTO insertAIncidence(IncidenceDTO incidenceDTO) {
         setExpirationDateByIncidence(incidenceDTO);
         log.info("Expiration date set to: {}", incidenceDTO.getExpiresAt());
+        if (isADiffIncidenceWithSameLocation(incidenceDTO)) {
+            log.warn("An incidence of a different type already exists at the same location: {}", incidenceDTO.getLocation());
+            incidenceMapper.convertToDTO(incidenceRepository.insert(incidenceMapper.convertToEntity(incidenceDTO)));
+            return incidenceDTO;
+        }
+        if (isSameIncidenceWithSameLocation(incidenceDTO)) {
+            log.warn("An identical incidence already exists at the same location: {}", incidenceDTO.getLocation());
+            throw new ConflictException("An identical incidence already exists at the same location.");
+        }
         incidenceMapper.convertToDTO(incidenceRepository.insert(incidenceMapper.convertToEntity(incidenceDTO)));
         return incidenceDTO;
     }
@@ -75,5 +85,25 @@ public class IncidenceService implements IIncidenceService {
             default:
                 throw new IllegalArgumentException("Invalid incidence type: " + incidenceDTO.getIncidence());
         }
+    }
+    private boolean isADiffIncidenceWithSameLocation(IncidenceDTO newIncidence) {
+        List<IncidenceDTO> existingIncidences = getAllIncidences();
+        for (IncidenceDTO existing : existingIncidences) {
+            if (existing.getLocation().equals(newIncidence.getLocation()) &&
+                    !existing.getIncidence().equals(newIncidence.getIncidence())) {
+                return true;
+            }
+        }
+        return false;
+    }
+    private boolean isSameIncidenceWithSameLocation(IncidenceDTO newIncidence) {
+        List<IncidenceDTO> existingIncidences = getAllIncidences();
+        for (IncidenceDTO existing : existingIncidences) {
+            if (existing.getLocation().equals(newIncidence.getLocation()) &&
+                    existing.getIncidence().equals(newIncidence.getIncidence())) {
+                return true;
+            }
+        }
+        return false;
     }
 }
