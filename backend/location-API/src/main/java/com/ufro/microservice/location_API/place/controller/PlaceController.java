@@ -26,6 +26,13 @@ public class PlaceController {
         this.placeService = placeService;
     }
 
+    @GetMapping("nearby")
+    public ResponseEntity<ApiResponse<PlaceDetailResponseDTO>> getNearbySearch(
+            @RequestParam double lat,
+            @RequestParam double lng) {
+        return ResponseEntity.ok().body(new ApiResponse<>(placeService.getNearbySearch(lat,lng)));
+    }
+
     @GetMapping("{placeId}")
     public ResponseEntity<ApiResponse<PlaceDetailResponseDTO>> getPlaceById(@PathVariable String placeId) {
         return ResponseEntity.ok().body(new ApiResponse<>(placeService.getPlaceDetails(placeId)));

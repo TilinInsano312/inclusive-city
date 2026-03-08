@@ -9,6 +9,7 @@ import java.util.List;
 
 public interface IPlaceService {
 
+    PlaceDetailResponseDTO getNearbySearch(double lat, double lng);
     PlaceDetailResponseDTO getPlaceDetails(String placeId);
     List<PlaceSearchResponseDTO> getPlaceBySearch(String query);
     PhotoDTO getPlacePhoto(String photoReference, Integer maxWidth);

@@ -31,6 +31,35 @@ public class PlacesService implements IPlaceService{
         this.placeMapper = placeMapper;
     }
 
+    @Override
+    public PlaceDetailResponseDTO getNearbySearch(double lat, double lng) {
+        try {
+            PlacesSearchResponse respuestaGoogle = PlacesApi.nearbySearchQuery(geoApiContext, new LatLng(lat, lng)).radius(5).await();
+            if (respuestaGoogle.results.length == 0) {
+                throw new NoSuchElementException("No se encontraron lugares cercanos en las coordenadas proporcionadas.");
+            }
+            PlaceDetails request = PlacesApi.placeDetails(geoApiContext, respuestaGoogle.results[0].placeId)
+                    .region("cl").language("es")
+                    .fields(PlaceDetailsRequest.FieldMask.PLACE_ID,
+                            PlaceDetailsRequest.FieldMask.NAME,
+                            PlaceDetailsRequest.FieldMask.FORMATTED_ADDRESS,
+                            PlaceDetailsRequest.FieldMask.GEOMETRY,
+                            PlaceDetailsRequest.FieldMask.PHOTOS).await();
+            PlaceDetailDTO detailDTO = convertToDetailDTO(request);
+            return new PlaceDetailResponseDTO(
+                    detailDTO.getPlaceId(),
+                    detailDTO.getName(),
+                    detailDTO.getAddress(),
+                    detailDTO.getCoordinate(),
+                    detailDTO.getPhotos(),
+                    getMedalsByPlaceId(respuestaGoogle.results[0].placeId),
+                    getRatingByPlaceId(respuestaGoogle.results[0].placeId)
+            );
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     //Buscar lugar por placeId
     //To do: manejar excepciones
     @Override
