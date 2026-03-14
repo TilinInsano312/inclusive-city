@@ -44,6 +44,24 @@ public class IncidenceService implements IIncidenceService {
     }
 
     @Override
+    public IncidenceDTO updateAIncidence(IncidenceDTO incidenceDTO) {
+        IncidenceDTO existingIncidence = incidenceMapper.convertToDTO(incidenceRepository
+                .findByPlaceIdAndIncidence(incidenceDTO.getPlaceId(), incidenceDTO.getIncidence())
+                .orElseThrow(() -> {
+                    log.warn("No se encontró incidencia para actualizar: placeId={}, tipo={}",
+                            incidenceDTO.getPlaceId(), incidenceDTO.getIncidence());
+                    // Aquí puedes lanzar tu propia excepción personalizada como NotFoundException
+                    return new IllegalArgumentException("La incidencia que intentas actualizar no existe.");
+                }));
+        setExpirationDateByIncidence(incidenceDTO);
+        existingIncidence.setExpiresAt(incidenceDTO.getExpiresAt());
+        IncidenceDTO updatedIncidence = incidenceMapper.convertToDTO(incidenceRepository.save(incidenceMapper.convertToEntity(existingIncidence)));
+        log.info("Tiempo de expiración actualizado a {} para la incidencia {}",
+                updatedIncidence.getExpiresAt(), updatedIncidence.getIncidence());
+        return updatedIncidence;
+    }
+
+    @Override
     public List<IncidenceDTO> getAllIncidences() {
         return incidenceRepository.findAll()
                 .stream()

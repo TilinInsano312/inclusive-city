@@ -24,7 +24,7 @@ public class IncidenceController {
         this.incidenceService = incidenceService;
     }
 
-    //Todo: @berAxz Revisar si la creacion de ...RequestDTO a ...DTO va en el controller o en el service
+    //Inserta una incidencia, se espera un IncidenceRequestDTO que contiene los datos necesarios para crear una incidencia, y el uid del usuario autenticado
     @PostMapping("/insert" )
     public ResponseEntity<ApiResponse<IncidenceDTO>> insertAIncidence(@RequestBody @Valid IncidenceRequestDTO incidenceRequestDTO, @AuthenticationPrincipal String uid) {
 
@@ -37,6 +37,19 @@ public class IncidenceController {
                 incidenceRequestDTO.getImage()
         );
         return ResponseEntity.status(201).body(new ApiResponse<>(incidenceService.insertAIncidence(incidenceDTO)));
+    }
+    //Actualiza una incidencia existente. Resetea el temporizador de expiración de la incidencia. Se espera un IncidenceRequestDTO que contiene los datos necesarios para actualizar una incidencia, y el uid del usuario autenticado
+    @PostMapping("/update")
+    public ResponseEntity<ApiResponse<IncidenceDTO>> updateAIncidence(@RequestBody @Valid IncidenceRequestDTO incidenceRequestDTO, @AuthenticationPrincipal String uid) {
+        IncidenceDTO incidenceDTO = new IncidenceDTO(
+                incidenceRequestDTO.getPlaceId(),
+                incidenceRequestDTO.getLocation(),
+                incidenceRequestDTO.getIncidence(),
+                null,
+                uid,
+                incidenceRequestDTO.getImage()
+        );
+        return ResponseEntity.ok().body(new ApiResponse<>(incidenceService.updateAIncidence(incidenceDTO)));
     }
 
     @GetMapping("/all" )

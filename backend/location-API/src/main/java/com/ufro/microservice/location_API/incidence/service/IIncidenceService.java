@@ -8,6 +8,7 @@ import java.util.List;
 
 public interface IIncidenceService {
     IncidenceDTO insertAIncidence(IncidenceDTO incidenceDTO);
+    IncidenceDTO updateAIncidence(IncidenceDTO incidenceDTO);
     List<IncidenceDTO> getAllIncidences();
     List<IncidenceDTO> getIncedenceBySector(LocationDTO pointNorthEast, LocationDTO pointSouthWest);
 }
