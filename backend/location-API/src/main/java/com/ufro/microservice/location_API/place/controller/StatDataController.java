@@ -1,6 +1,7 @@
 package com.ufro.microservice.location_API.place.controller;
 
 import com.ufro.microservice.location_API.common.response.ApiResponse;
+import com.ufro.microservice.location_API.place.dto.ReviewDTO;
 import com.ufro.microservice.location_API.place.dto.StatDataDTO;
 import com.ufro.microservice.location_API.place.service.IStatDataService;
 import jakarta.validation.Valid;
@@ -29,7 +30,8 @@ public class StatDataController {
         );
     }
     @PostMapping("save/{placeId}" )
-    public ResponseEntity<ApiResponse<Long>> saveStatDataForms(@RequestBody @Valid StatDataDTO statDataDTO, @PathVariable String placeId, @AuthenticationPrincipal String uid) {
+    public ResponseEntity<ApiResponse<Long>> saveStatDataForms(@RequestBody @Valid ReviewDTO reviewDTO, @PathVariable String placeId, @AuthenticationPrincipal String uid) {
+        StatDataDTO statDataDTO = new StatDataDTO("",reviewDTO.getRateChoice(), reviewDTO.getForms());
         statDataDTO.setUserId(uid);
         log.info("User ID from token: {}", uid);
         log.info("Received StatDataDTO: {}", statDataDTO);
