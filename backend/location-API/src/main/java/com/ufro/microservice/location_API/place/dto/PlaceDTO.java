@@ -3,7 +3,6 @@ package com.ufro.microservice.location_API.place.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
-import java.util.Map;
 
 public class PlaceDTO {
     @NotNull(message = "Cannot be null")
@@ -13,13 +12,16 @@ public class PlaceDTO {
     private List<String> medals;
     @NotNull(message = "Cannot be null")
     private float rating;
-    private Map<String,StatDataDTO> statsData;
+    private List<StatDataDTO> statsData;
 
-    public PlaceDTO(String placeId, List<String> medals, float rating, Map<String, StatDataDTO> statsData) {
+    public PlaceDTO(String placeId, List<String> medals, float rating, List<StatDataDTO> statsData) {
         this.placeId = placeId;
         this.medals = medals;
         this.rating = rating;
         this.statsData = statsData;
+    }
+
+    public PlaceDTO() {
     }
 
     public String getPlaceId() {
@@ -46,11 +48,21 @@ public class PlaceDTO {
         this.rating = rating;
     }
 
-    public Map<String, StatDataDTO> getStatsData() {
+    public List<StatDataDTO> getStatsData() {
         return statsData;
     }
 
-    public void setStatsData(Map<String, StatDataDTO> statsData) {
+    public void setStatsData(List<StatDataDTO> statsData) {
         this.statsData = statsData;
+    }
+
+    @Override
+    public String toString() {
+        return "PlaceDTO{" +
+                "placeId='" + placeId + '\'' +
+                ", medals=" + medals +
+                ", rating=" + rating +
+                ", statsData=" + statsData +
+                '}';
     }
 }

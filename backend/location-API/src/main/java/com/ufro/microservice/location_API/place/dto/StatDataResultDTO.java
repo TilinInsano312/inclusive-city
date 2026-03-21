@@ -11,6 +11,9 @@ public class StatDataResultDTO {
         this.forms = forms;
     }
 
+    public StatDataResultDTO() {
+    }
+
     public float getRateChoice() {
         return rateChoice;
     }
@@ -25,5 +28,13 @@ public class StatDataResultDTO {
 
     public void setForms(List<String> forms) {
         this.forms = forms;
+    }
+
+    @Override
+    public String toString() {
+        return "StatDataResultDTO{" +
+                "rateChoice=" + rateChoice +
+                ", forms=" + forms +
+                '}';
     }
 }

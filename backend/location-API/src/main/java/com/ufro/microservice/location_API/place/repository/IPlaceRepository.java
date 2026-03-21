@@ -15,7 +15,7 @@ public interface IPlaceRepository extends MongoRepository<Place, String>, PlaceR
     Place findPlaceByPlaceId(String placeId);
 
     @Query("{'placeId': ?0}")
-    @Update("{'$set': {'statsData': ?1}}")
+    @Update("{'$push': {'statsData': ?1}}")
     long updateByPlaceId(String placeId, StatData statData);
 
     @Query("{'placeId': ?0}")

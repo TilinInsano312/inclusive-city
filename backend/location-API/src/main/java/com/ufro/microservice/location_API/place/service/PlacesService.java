@@ -83,6 +83,7 @@ public class PlacesService implements IPlaceService{
                     getRatingByPlaceId(placeId)
             );
         } catch (Exception e) {
+            log.info("Error al obtener detalles del lugar con placeId: {}. Detalles del error: {}", placeId, e.getMessage());
             throw new RuntimeException(e);
         }
     }
@@ -181,7 +182,7 @@ public class PlacesService implements IPlaceService{
     @Override
     public List<PlaceDTO> getStatDataByUserId(String userId) {
         return placeRepository.findAll().stream()
-                .filter(place -> place.getStatsData().containsKey(userId))
+                .filter(place -> place.getStatsData().contains(userId))
                 .map(place -> placeMapper.toPlaceDTO(place))
                 .collect(Collectors.toList());
     }

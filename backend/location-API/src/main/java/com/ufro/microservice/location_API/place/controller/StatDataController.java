@@ -30,6 +30,7 @@ public class StatDataController {
     }
     @PostMapping("save/{placeId}" )
     public ResponseEntity<ApiResponse<Long>> saveStatDataForms(@RequestBody @Valid StatDataDTO statDataDTO, @PathVariable String placeId, @AuthenticationPrincipal String uid) {
+        statDataDTO.setUserId(uid);
         log.info("User ID from token: {}", uid);
         log.info("Received StatDataDTO: {}", statDataDTO);
         return ResponseEntity.status(201).body(

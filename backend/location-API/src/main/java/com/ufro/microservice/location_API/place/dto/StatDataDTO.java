@@ -7,15 +7,28 @@ import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
 public class StatDataDTO {
-
+    private String userId;
     //Valor por defecto ChoiceRate.NA
     private String rateChoice= ChoiceRate.NA.name();
     private List<String> forms;
 
     public StatDataDTO(String userId, String rateChoice, List<String> forms) {
+        this.userId = userId;
         this.rateChoice = rateChoice;
         this.forms = forms;
     }
+
+    public StatDataDTO() {
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
     public String getRateChoice() {
         return rateChoice;
     }
@@ -30,5 +43,14 @@ public class StatDataDTO {
 
     public void setForms(List<String> forms) {
         this.forms = forms;
+    }
+
+    @Override
+    public String toString() {
+        return "StatDataDTO{" +
+                "userId='" + userId + '\'' +
+                ", rateChoice='" + rateChoice + '\'' +
+                ", forms=" + forms +
+                '}';
     }
 }

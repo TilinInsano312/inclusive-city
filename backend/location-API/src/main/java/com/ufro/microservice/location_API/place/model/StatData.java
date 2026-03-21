@@ -42,4 +42,13 @@ public class StatData {
     public void setForms(List<String> forms) {
         this.forms = forms;
     }
+
+    @Override
+    public String toString() {
+        return "StatData{" +
+                "userId='" + userId + '\'' +
+                ", rateChoice='" + rateChoice + '\'' +
+                ", forms=" + forms +
+                '}';
+    }
 }

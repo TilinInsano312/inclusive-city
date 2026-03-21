@@ -18,9 +18,9 @@ public class Place {
     private List<String> medals;
     private float rating;
     @Field("statsData")
-    private Map<String,StatData> statsData;
+    private List<StatData> statsData;
 
-    public Place(String id, String placeId, List<String> medals, float rating, Map<String,StatData> statsData) {
+    public Place(String id, String placeId, List<String> medals, float rating, List<StatData> statsData) {
         this.id = id;
         this.placeId = placeId;
         this.medals = medals;
@@ -63,11 +63,22 @@ public class Place {
         this.rating = rating;
     }
 
-    public Map<String, StatData> getStatsData() {
+    public List<StatData> getStatsData() {
         return statsData;
     }
 
-    public void setStatsData(Map<String, StatData> statsData) {
+    public void setStatsData(List<StatData> statsData) {
         this.statsData = statsData;
+    }
+
+    @Override
+    public String toString() {
+        return "Place{" +
+                "id='" + id + '\'' +
+                ", placeId='" + placeId + '\'' +
+                ", medals=" + medals +
+                ", rating=" + rating +
+                ", statsData=" + statsData +
+                '}';
     }
 }
