@@ -182,8 +182,9 @@ public class PlacesService implements IPlaceService{
     @Override
     public List<PlaceDTO> getStatDataByUserId(String userId) {
         return placeRepository.findAll().stream()
-                .filter(place -> place.getStatsData().contains(userId))
-                .map(place -> placeMapper.toPlaceDTO(place))
+                .filter(place -> place.getStatsData() != null
+                        && place.getStatsData().stream().anyMatch(stat -> userId.equals(stat.getUserId())))
+                .map(placeMapper::toPlaceDTO)
                 .collect(Collectors.toList());
     }
 }
