@@ -178,13 +178,27 @@ public class PlacesService implements IPlaceService{
                 );
     }
 
-    // obtener todas las stat data de un usuario revisando los placeid
+    // obtener todos los lugares donde el usuario ha dejado una review, para esto se revisa cada lugar en la base de datos
+    // y se filtra por aquellos lugares que tengan una stat data con el userId del usuario y solo se muestran las reviews hechas por el usuario(que contengan su id)
+    // luego se mapea a PlaceDTO y se devuelve la lista de PlaceDTOs al controlador.
     @Override
     public List<PlaceDTO> getStatDataByUserId(String userId) {
+        if (userId == null || userId.isBlank()) {
+            return Collections.emptyList();
+        }
+
         return placeRepository.findAll().stream()
                 .filter(place -> place.getStatsData() != null
                         && place.getStatsData().stream().anyMatch(stat -> userId.equals(stat.getUserId())))
-                .map(placeMapper::toPlaceDTO)
+                .map(place -> {
+                    PlaceDTO dto = placeMapper.toPlaceDTO(place);
+                    if (dto.getStatsData() != null) {
+                        dto.setStatsData(dto.getStatsData().stream()
+                                .filter(stat -> userId.equals(stat.getUserId()))
+                                .collect(Collectors.toList()));
+                    }
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 }
