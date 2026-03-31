@@ -84,7 +84,7 @@ public class IncidenceService implements IIncidenceService {
         Instant ahora = Instant.now();
         Instant fechaExpiracion;
         switch (incidenceDTO.getIncidence()) {
-            case "ALUMBRADO_PUBLICO":
+            case "ALUMBRADO_PUBLICO", "SUPERFICIE_RESBALADIZA":
                 fechaExpiracion = ahora.plus(30, ChronoUnit.MINUTES);
                 incidenceDTO.setExpiresAt(fechaExpiracion);
                 break;
@@ -92,7 +92,7 @@ public class IncidenceService implements IIncidenceService {
                 fechaExpiracion = ahora.plus(45, ChronoUnit.MINUTES);
                 incidenceDTO.setExpiresAt(fechaExpiracion);
                 break;
-            case "BLOQUEDO_RUTA", "NO_RAMPA", "RAMPA_DANADA":
+            case "BLOQUEDO_RUTA", "NO_RAMPA", "RAMPA_DANADA", "FALTA_REBAJE", "SEMAFORO_MUTE", "GRITEAS", "BACHES", "DESNIVELES":
                 fechaExpiracion = ahora.plus(1, ChronoUnit.HOURS);
                 incidenceDTO.setExpiresAt(fechaExpiracion);
                 break;
