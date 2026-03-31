@@ -8,9 +8,7 @@ import com.ufro.microservice.location_API.place.repository.IPlaceRepository;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class StatDataService implements IStatDataService {
@@ -73,40 +71,111 @@ public class StatDataService implements IStatDataService {
         log.info("Calculated medals: " + formStatistics);
         return formStatistics;
     }
-
+    // Este metodo se encarga de agregar los datos del formulario (forms) a un lugar específico para un usuario determinado.
+    // Primero, verifica si el lugar existe en la base de datos.
+    // Si el lugar existe, se obtiene la información del lugar y se agrega la nueva información del formulario a la lista de datos estadísticos del lugar.
+    // Si el usuario ya tiene una elección de calificación para ese lugar, se actualiza la información del formulario existente en lugar de agregar una nueva.
+    // Finalmente, se actualiza el lugar en la base de datos con la nueva información del formulario.
     @Override
-    public long addStatDataToPlace(StatDataDTO statDataDTO, String placeId, String userId) {
+    public long addFormsToPlace(FormsDTO formsDTO, String placeId, String userId) {
         try {
-            if (placeRepository.existsPlaceByPlaceId(placeId)) {
-                log.info("Adding stat data to place with ID: " + placeId + " for user: " + userId);
-                PlaceDTO placeDTO = placeMapper.toPlaceDTO(placeRepository.findByPlaceId(placeId).orElseThrow());
-                log.info("Fetched place data for place ID: " + placeId + " with existing stats data: " + placeDTO.getStatsData());
-                StatDataDTO statdata = new StatDataDTO(userId, statDataDTO.getRateChoice(), statDataDTO.getForms());
-                placeDTO.getStatsData().add(statdata);
-                log.info("Updated stats data for place: " + placeDTO.getStatsData());
-                // si el usuario ya tiene una review, se actualiza, sino se agrega una nueva stat data. Para esto se revisa si el userId ya existe en las stat data del lugar, si existe se actualiza esa stat data, sino se agrega una nueva stat data al lugar.
-                if ( placeDTO.getStatsData().stream().anyMatch(stat -> stat.getUserId().equals(userId))) {
-                    log.info("User with ID: " + userId + " already has a review for place ID: " + placeId + ". Updating existing stat data.");
-                    placeDTO.getStatsData().removeIf(stat -> stat.getUserId().equals(userId));
-                }
-                return placeRepository.updateByPlaceId(placeId, statDataMapper.toStatData(statdata));
-            } else {
-                log.warn("Place with ID: " + placeId + " does not exist. Cannot add stat data.");
-                placeMapper.toPlaceDTO(placeRepository.save(
-                        placeMapper.toPlace(new PlaceDTO(
-                                placeId,
-                                List.of(),
-                                0.0f,
-                                List.of(new StatDataDTO(userId, statDataDTO.getRateChoice(), statDataDTO.getForms()))
-                        ))
-                ));
-                log.info("Created new place with ID: " + placeId + " and initial stat data for user: " + userId);
+            List<String> forms = new ArrayList<>(formsDTO.getForms());
+
+            if (!placeRepository.existsPlaceByPlaceId(placeId)) {
+                log.warn("Place with ID: {} does not exist. Creating place with initial forms.", placeId);
+
+                PlaceDTO newPlace = new PlaceDTO(
+                        placeId,
+                        List.of(),
+                        0.0f,
+                        List.of(new StatDataDTO(userId, "NA", forms))
+                );
+
+                placeMapper.toPlaceDTO(placeRepository.save(placeMapper.toPlace(newPlace)));
+                log.info("Created new place with ID: {} and initial forms for user ID: {}", placeId, userId);
                 return 0;
             }
+
+            log.info("Adding/updating forms for place ID: {} and user ID: {}", placeId, userId);
+            PlaceDTO placeDTO = placeMapper.toPlaceDTO(placeRepository.findByPlaceId(placeId).orElseThrow());
+
+            StatDataDTO statToPersist;
+            Optional<StatDataDTO> existingStatOpt = placeDTO.getStatsData().stream()
+                    .filter(stat -> stat.getUserId().equals(userId))
+                    .findFirst();
+
+            if (existingStatOpt.isPresent()) {
+                String rate = existingStatOpt.get().getRateChoice() != null ? existingStatOpt.get().getRateChoice() : "NA";
+                statToPersist = new StatDataDTO(userId, rate, forms);
+                log.info("Updated existing forms for user ID: {} in place ID: {}", userId, placeId);
+            } else {
+                statToPersist = new StatDataDTO(userId, "NA", forms);
+                log.info("Added new forms for user ID: {} in place ID: {} with NA rate choice", userId, placeId);
+            }
+
+            if (placeRepository.existsStatDataByPlaceIdAndUserId(placeId, userId)) {
+                return placeRepository.updateExistingStatData(placeId, userId, statDataMapper.toStatData(statToPersist));
+            }
+            return placeRepository.addStatDataIfUserNotExists(placeId, userId, statDataMapper.toStatData(statToPersist));
         } catch (Exception e) {
-            log.info("Error adding stat data to place with ID: " + placeId + " for user: " + userId + ". Error: " + e.getMessage());
+            log.info("Error adding/updating forms for place ID: {} and user ID: {}. Error: {}", placeId, userId, e.getMessage());
             log.error("Exception stack trace: ", e);
-            log.error(e.getLocalizedMessage());
+            throw new RuntimeException(e);
+        }
+    }
+    // Este metodo se encarga de agregar una nueva elección de calificación (LIKE o DISLIKE) a un lugar específico para un usuario determinado.
+    // Primero, verifica si el lugar existe en la base de datos.
+    // Si el lugar existe, se obtiene la información del lugar y se agrega la nueva elección de calificación a la lista de datos estadísticos del lugar.
+    // Si el usuario ya tiene una elección de calificación para ese lugar, se actualiza la elección existente en lugar de agregar una nueva.
+    // Finalmente, se actualiza el lugar en la base de datos con la nueva información de calificación.
+    // Si el usuario no tiene realizado el formulario, se agrega la calificacion y el formulario queda como una lista de strings "NA" (no aplica) y se agrega la nueva elección de calificación a la lista de datos estadísticos del lugar.
+    @Override
+    public long addRateChoiceToPlace(String placeId, String userId, RateChoiceDTO rateChoice) {
+        try {
+            List<String> defaultForms = List.of("NA", "NA", "NA", "NA", "NA", "NA");
+
+            if (!placeRepository.existsPlaceByPlaceId(placeId)) {
+                log.warn("Place with ID: {} does not exist. Creating place with initial rate choice.", placeId);
+
+                PlaceDTO newPlace = new PlaceDTO(
+                        placeId,
+                        List.of(),
+                        0.0f,
+                        List.of(new StatDataDTO(userId, rateChoice.getRateChoice(), defaultForms))
+                );
+
+                placeMapper.toPlaceDTO(placeRepository.save(placeMapper.toPlace(newPlace)));
+                log.info("Created new place with ID: {} and initial rate choice for user ID: {}", placeId, userId);
+                return 0;
+            }
+
+            log.info("Adding/updating rate choice for place ID: {} and user ID: {}", placeId, userId);
+
+            PlaceDTO placeDTO = placeMapper.toPlaceDTO(
+                    placeRepository.findByPlaceId(placeId).orElseThrow()
+            );
+
+            StatDataDTO statToPersist;
+            Optional<StatDataDTO> existingStatOpt = placeDTO.getStatsData().stream()
+                    .filter(stat -> stat.getUserId().equals(userId))
+                    .findFirst();
+
+            if (existingStatOpt.isPresent()) {
+                statToPersist = new StatDataDTO(userId, rateChoice.getRateChoice(), existingStatOpt.get().getForms());
+                log.info("Updated existing rate choice for user ID: {} in place ID: {}", userId, placeId);
+            } else {
+                statToPersist = new StatDataDTO(userId, rateChoice.getRateChoice(), defaultForms);
+                log.info("Added new rate choice for user ID: {} in place ID: {} with NA forms", userId, placeId);
+            }
+
+            if (placeRepository.existsStatDataByPlaceIdAndUserId(placeId, userId)) {
+                return placeRepository.updateExistingStatData(placeId, userId, statDataMapper.toStatData(statToPersist));
+            }
+            return placeRepository.addStatDataIfUserNotExists(placeId, userId, statDataMapper.toStatData(statToPersist));
+
+        } catch (Exception e) {
+            log.info("Error adding/updating rate choice for place ID: {} and user ID: {}. Error: {}", placeId, userId, e.getMessage());
+            log.error("Exception stack trace: ", e);
             throw new RuntimeException(e);
         }
     }

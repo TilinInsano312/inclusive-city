@@ -24,7 +24,7 @@ services:
       timeout: 5s
       retries: 5
   # ============================================
-  # Eureka Server (Service Discovery)
+  # Eureka Server
   # ============================================
   eureka-server:
     build:
@@ -119,13 +119,6 @@ services:
       - SPRING_PROFILES_ACTIVE=docker
       - SPRING_DATA_MONGODB_URI=${SPRING_DATA_MONGODB_URI}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
-#      - AWS_REGION=${AWS_REGION:-us-east-1}
-#      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-#      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-#      - SPRING_MAIL_HOST=${MAIL_HOST:-smtp.gmail.com}
-#      - SPRING_MAIL_PORT=${MAIL_PORT:-587}
-#      - SPRING_MAIL_USERNAME=${MAIL_USERNAME}
-#      - SPRING_MAIL_PASSWORD=${MAIL_PASSWORD}
     depends_on:
       eureka-server:
         condition: service_healthy
@@ -140,7 +133,7 @@ services:
 
 
   # ============================================
-  # Gateway Service (Ãºltimo en iniciar)
+  # Gateway Service
   # ============================================
   gateway-service:
     build:
