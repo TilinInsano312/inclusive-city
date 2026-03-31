@@ -27,7 +27,6 @@
         <module>eureka-server</module>
         <module>route-API</module>
         <module>location-API</module>
-        <module>authentication-service</module>
     </modules>
 
     <dependencyManagement>

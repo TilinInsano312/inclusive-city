@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y maven && rm -rf /var/lib/apt/lists/*
 COPY pom.xml ./
 COPY eureka-server/pom.xml ./eureka-server/
 COPY gateway-service/pom.xml ./gateway-service/
-COPY authentication-service/pom.xml ./authentication-service/
+#COPY authentication-service/pom.xml ./authentication-service/
 COPY route-API/pom.xml ./route-API/
 COPY location-API/pom.xml ./location-API/
 # CAPA 2: Dependencias (se cachea)

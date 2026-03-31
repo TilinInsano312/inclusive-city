@@ -53,28 +53,28 @@ services:
   # ============================================
   # Authentication Service
   # ============================================
-  authentication-service:
-    build:
-      context: .
-      dockerfile: authentication-service/Dockerfile
-    container_name: authentication-service
-    ports:
-      - "9090:9090"
-    env_file:
-      - .env
-    environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
-      - SPRING_DATA_MONGODB_URI=${SPRING_DATA_MONGODB_URI}
-    depends_on:
-      eureka-server:
-        condition: service_healthy
-      inclusive-mongodb:
-        condition: service_healthy
-    networks:
-      - microservices-net
-    volumes:
-      - ./firebase-service.json:/app/firebase-service.json:ro
+#  authentication-service:
+#    build:
+#      context: .
+#      dockerfile: authentication-service/Dockerfile
+#    container_name: authentication-service
+#    ports:
+#      - "9090:9090"
+#    env_file:
+#      - .env
+#    environment:
+#      - SPRING_PROFILES_ACTIVE=docker
+#      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+#      - SPRING_DATA_MONGODB_URI=${SPRING_DATA_MONGODB_URI}
+#    depends_on:
+#      eureka-server:
+#        condition: service_healthy
+#      inclusive-mongodb:
+#        condition: service_healthy
+#    networks:
+#      - microservices-net
+#    volumes:
+#      - ./firebase-service.json:/app/firebase-service.json:ro
 
   # ============================================
   # Route API
@@ -94,10 +94,8 @@ services:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - ORS_API_KEY=${ORS_API_KEY}
     depends_on:
-      eureka-server:
-        condition: service_healthy
-      inclusive-mongodb:
-        condition: service_healthy
+      gateway-service:
+        condition: service_completed_successfully
     networks:
       - microservices-net
     volumes:
@@ -120,10 +118,8 @@ services:
       - SPRING_DATA_MONGODB_URI=${SPRING_DATA_MONGODB_URI}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
     depends_on:
-      eureka-server:
-        condition: service_healthy
-      inclusive-mongodb:
-        condition: service_healthy
+      gateway-service:
+        condition: service_completed_successfully
     networks:
       - microservices-net
     volumes:
@@ -149,15 +145,17 @@ services:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
     depends_on:
       eureka-server:
-        condition: service_healthy
-      authentication-service:
-        condition: service_started
+        condition: service_completed_successfully
+      inclusive-mongodb:
+        condition: service_completed_successfully
+#      authentication-service:
+#        condition: service_started
 #      account-api:
 #        condition: service_started
-      route-api:
-        condition: service_started
-      location-api:
-        condition: service_started
+#      route-api:
+#        condition: service_started
+#      location-api:
+#        condition: service_started
     networks:
       - microservices-net
     volumes:
