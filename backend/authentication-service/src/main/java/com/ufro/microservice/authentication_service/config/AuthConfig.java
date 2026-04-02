@@ -25,8 +25,9 @@ public class AuthConfig {
                 .cors(org.springframework.security.config.Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "inclusive/api/v1/account/auth/register", "inclusive/api/v1/account/auth/login", "inclusive/api/v1/email/reset-password", "inclusive/api/v1/verify-code").permitAll()
-                        .requestMatchers(HttpMethod.PATCH, "inclusive/api/v1/account/reset-password").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers(HttpMethod.POST).permitAll()
+                        .requestMatchers(HttpMethod.PATCH).permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
