@@ -13,11 +13,8 @@ target/
 .springBeans
 .sts4-cache
 
-firebase-service.json
-gcp-credentials.json
-
 ### IntelliJ IDEA ###
-../.idea
+.idea
 *.iws
 *.iml
 *.ipr
@@ -36,4 +33,6 @@ build/
 .vscode/
 
 ### environment files ###
-../.env
+.env
+firebase-service.json
+gcp-credentials.json
