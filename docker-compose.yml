@@ -28,7 +28,7 @@ services:
   # ============================================
   eureka-server:
     build:
-      context: .
+      context: backend
       dockerfile: eureka-server/Dockerfile
     container_name: eureka-server
     restart: unless-stopped
@@ -81,7 +81,7 @@ services:
   # ============================================
   route-api:
     build:
-      context: .
+      context: backend
       dockerfile: route-API/Dockerfile
     container_name: route-api
     ports:
@@ -106,7 +106,7 @@ services:
   # ============================================
   location-api:
     build:
-      context: .
+      context: backend
       dockerfile: location-API/Dockerfile
     container_name: location-api
     ports:
@@ -133,7 +133,7 @@ services:
   # ============================================
   gateway-service:
     build:
-      context: .
+      context: backend
       dockerfile: gateway-service/Dockerfile
     container_name: gateway-service
     ports:
