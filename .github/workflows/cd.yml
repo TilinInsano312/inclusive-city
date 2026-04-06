@@ -70,11 +70,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Configure SSH
+      - name: Start ssh-agent and add key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+
+      - name: Add VPS host to known_hosts
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.VPS_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -p "${{ secrets.VPS_SSH_PORT }}" -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
 
       - name: Sync docker-compose to VPS
@@ -91,5 +94,6 @@ jobs:
             printf '%s' "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
             docker compose pull eureka-server gateway-service route-api location-api
             docker compose up -d --no-build inclusive-mongodb eureka-server gateway-service route-api location-api
+            docker logout ghcr.io
             docker image prune -f
           EOT

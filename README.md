@@ -23,7 +23,7 @@ Configurar estos secretos en el repositorio:
 - `VPS_SSH_USER`: usuario SSH
 - `VPS_SSH_PRIVATE_KEY`: clave privada SSH para acceder a la VPS
 - `VPS_DEPLOY_PATH`: ruta en la VPS donde vive el proyecto (debe contener `.env` y archivos montados)
-- `GHCR_USERNAME`: usuario con permisos de lectura sobre GHCR
+- `GHCR_USERNAME`: username de GitHub con permiso de lectura de paquetes del repo en GHCR
 - `GHCR_TOKEN`: token dedicado para la VPS con scope `read:packages` (solo pull desde GHCR)
 
 ## Notas de despliegue en VPS
