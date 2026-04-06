@@ -27,6 +27,7 @@ services:
   # Eureka Server
   # ============================================
   eureka-server:
+    image: ${EUREKA_SERVER_IMAGE:-ghcr.io/tilininsano312/inclusive-city/eureka-server:latest}
     build:
       dockerfile: eureka-server/Dockerfile
     container_name: eureka-server
@@ -79,6 +80,7 @@ services:
   # Route API
   # ============================================
   route-api:
+    image: ${ROUTE_API_IMAGE:-ghcr.io/tilininsano312/inclusive-city/route-api:latest}
     build:
       dockerfile: route-API/Dockerfile
     container_name: route-api
@@ -103,6 +105,7 @@ services:
   # Location API
   # ============================================
   location-api:
+    image: ${LOCATION_API_IMAGE:-ghcr.io/tilininsano312/inclusive-city/location-api:latest}
     build:
       dockerfile: location-API/Dockerfile
     container_name: location-api
@@ -129,6 +132,7 @@ services:
   # Gateway Service
   # ============================================
   gateway-service:
+    image: ${GATEWAY_SERVICE_IMAGE:-ghcr.io/tilininsano312/inclusive-city/gateway-service:latest}
     build:
       dockerfile: gateway-service/Dockerfile
     container_name: gateway-service
