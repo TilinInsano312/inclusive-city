@@ -12,11 +12,15 @@ Se agregaron dos workflows en GitHub Actions:
     - `gateway-service`
     - `route-api`
     - `location-api`
+  - soporta 2 ambientes:
+    - `dev`: push a rama `dev` (tag de imagen `dev-latest`)
+    - `production`: push a rama `main` (tag de imagen `latest`)
+  - permite deploy manual (`workflow_dispatch`) eligiendo `dev` o `production`
   - despliega a una VPS por SSH usando el mismo `docker-compose.yml` del repositorio.
 
 ## Secrets requeridos en GitHub
 
-Configurar estos secretos en el repositorio:
+Configurar estos secretos en **GitHub Environments** (`dev` y `production`), idealmente separados por ambiente:
 
 - `VPS_HOST`: IP o dominio de la VPS
 - `VPS_SSH_PORT`: puerto SSH (por ejemplo `22`)
@@ -31,4 +35,7 @@ Configurar estos secretos en el repositorio:
 - El workflow sincroniza `docker-compose.yml` y luego ejecuta:
   - `docker compose pull` de los servicios publicados en GHCR
   - `docker compose up -d --no-build` para levantar con imágenes remotas
+- En cada ambiente, el workflow exporta imágenes con tag según el entorno:
+  - `dev` => `ghcr.io/tilininsano312/inclusive-city/<service>:dev-latest`
+  - `production` => `ghcr.io/tilininsano312/inclusive-city/<service>:latest`
 - El `docker-compose.yml` mantiene `build` para uso local, y ahora también define `image` para despliegue con GHCR.
