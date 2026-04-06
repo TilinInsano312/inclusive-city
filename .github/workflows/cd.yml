@@ -88,7 +88,7 @@ jobs:
           ssh -p "${{ secrets.VPS_SSH_PORT }}" "${{ secrets.VPS_SSH_USER }}@${{ secrets.VPS_HOST }}" <<EOT
             set -e
             cd "${{ secrets.VPS_DEPLOY_PATH }}"
-            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
+            printf '%s' "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
             docker compose pull eureka-server gateway-service route-api location-api
             docker compose up -d --no-build inclusive-mongodb eureka-server gateway-service route-api location-api
             docker image prune -f
