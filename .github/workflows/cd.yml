@@ -23,7 +23,7 @@ permissions:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_PREFIX: ghcr.io/tilininsano312/inclusive-city
+  IMAGE_PREFIX: ghcr.io/inclusive-hoch/inclusive-city
 
 jobs:
   # ─── Guarda de CI ────────────────────────────────────────────────────────────
