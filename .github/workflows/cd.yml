@@ -6,7 +6,7 @@ on:
     types: [completed]
     branches:
       - main
-      - dev
+      - develop
   workflow_dispatch:
     inputs:
       environment:
@@ -52,12 +52,12 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             DEPLOY_ENV="${{ inputs.environment }}"
           elif [ "${{ github.event.workflow_run.head_branch }}" = "main" ]; then
-            DEPLOY_ENV="production"
+            DEPLOY_ENV="prod"
           else
             DEPLOY_ENV="dev"
           fi
 
-          if [ "$DEPLOY_ENV" = "production" ]; then
+          if [ "$DEPLOY_ENV" = "prod" ]; then
             IMAGE_TAG="latest"
           else
             IMAGE_TAG="dev-latest"
