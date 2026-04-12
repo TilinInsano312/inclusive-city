@@ -19,7 +19,7 @@ services:
     networks:
       - microservices-net
     healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      test: mongo -u $$MONGO_INITDB_ROOT_USERNAME -p $$MONGO_INITDB_ROOT_PASSWORD --quiet --eval "db.adminCommand('ping')"
       interval: 10s
       timeout: 5s
       retries: 5
