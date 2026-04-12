@@ -26,6 +26,8 @@ RUN mvn clean package -T 1C -pl gateway-service -am -DskipTests
 # Stage 2: Runtime (Imagen final ligera)
 FROM ibm-semeru-runtimes:open-21-jre-jammy
 
+RUN apt-get update && apt-get install -y wget && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 # Crear usuario no-root para seguridad

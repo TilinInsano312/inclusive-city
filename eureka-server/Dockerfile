@@ -25,6 +25,7 @@ COPY eureka-server/src ./eureka-server/src
 RUN mvn clean package -T 1C -pl eureka-server -am -DskipTests
 # Stage 2: Runtime (Imagen final ligera)
 FROM ibm-semeru-runtimes:open-21-jre-jammy
+RUN apt-get update && apt-get install -y wget && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 # Copiar el JAR desde el builder
