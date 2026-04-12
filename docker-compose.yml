@@ -6,8 +6,6 @@ services:
     image: mongo:4.4
     container_name: inclusive-mongodb
     restart: unless-stopped
-    ports:
-      - "27017:27017"
     environment:
       - MONGO_INITDB_DATABASE=${SPRING_DATA_MONGODB_DATABASE}
       - MONGO_INITDB_ROOT_HOST=${SPRING_DATA_MONGODB_HOST}
@@ -32,8 +30,6 @@ services:
       dockerfile: eureka-server/Dockerfile
     container_name: eureka-server
     restart: unless-stopped
-    ports:
-      - "8761:8761"
     env_file:
       - .env
     environment:
@@ -84,8 +80,6 @@ services:
     build:
       dockerfile: route-API/Dockerfile
     container_name: route-api
-    ports:
-      - "8060:8060"
     env_file:
       - .env
     environment:
@@ -109,8 +103,6 @@ services:
     build:
       dockerfile: location-API/Dockerfile
     container_name: location-api
-    ports:
-      - "8070:8070"
     env_file:
       - .env
     environment:
@@ -136,8 +128,6 @@ services:
     build:
       dockerfile: gateway-service/Dockerfile
     container_name: gateway-service
-    ports:
-      - "8080:8080"
     env_file:
       - .env
     environment:
@@ -158,6 +148,7 @@ services:
 #        condition: service_started
     networks:
       - microservices-net
+      - caddy-net
     volumes:
       - ./firebase-service.json:/app/firebase-service.json:ro
 
@@ -167,6 +158,8 @@ services:
 networks:
   microservices-net:
     driver: bridge
+  caddy-net:
+    external: true
 
 # ============================================
 # Volumes
