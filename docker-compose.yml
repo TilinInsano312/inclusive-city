@@ -95,7 +95,7 @@ services:
       - ORS_API_KEY=${ORS_API_KEY}
     depends_on:
       gateway-service:
-        condition: service_completed_successfully
+        condition: service_started
     networks:
       - microservices-net
     volumes:
@@ -119,7 +119,7 @@ services:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
     depends_on:
       gateway-service:
-        condition: service_completed_successfully
+        condition: service_started
     networks:
       - microservices-net
     volumes:
@@ -145,9 +145,9 @@ services:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
     depends_on:
       eureka-server:
-        condition: service_completed_successfully
+        condition: service_healthy
       inclusive-mongodb:
-        condition: service_completed_successfully
+        condition: service_healthy
 #      authentication-service:
 #        condition: service_started
 #      account-api:
